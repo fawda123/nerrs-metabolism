@@ -54,9 +54,9 @@ The script is not run in this Rmd file since it takes a while, but it is shown f
 
 ```{r eval = F}
 # import apacp data, clean up with qaqc
-apacpwq <- import_local(station_code = 'apacpwq', path = here('data/284523.zip'))
+apacpwq <- import_local(station_code = 'apacpwq', path = here('data-raw/284523.zip'))
 apacpwq <- qaqc(apacpwq, qaqc_keep = c('0', '1', '2', '3', '4', '5'))
-apaebmet <- import_local(station_code = 'apaebmet', path = here('data/284523.zip'))
+apaebmet <- import_local(station_code = 'apaebmet', path = here('data-raw/284523.zip'))
 apaebmet <- qaqc(apaebmet, qaqc_keep = c('0', '1', '2', '3', '4', '5'))
 
 # combine wx and wq, select/rename relevant columns
