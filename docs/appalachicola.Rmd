@@ -10,7 +10,7 @@ Below is an exploration of DO and metabolism data from the Cat Point station at 
 # {.tabset .tabset-panel}
 
 ```{r setup, warning = F, message = F}
-knitr::opts_chunk$set(echo = TRUE, message = F, echo = T, warning = F)
+knitr::opts_chunk$set(echo = TRUE, message = F, echo = T, warning = F, fig.path = '')
 
 # libraries
 box::use(
@@ -25,7 +25,8 @@ box::use(
   tibble[enframe], 
   lubridate[...], 
   ggforce[facet_zoom],
-  oce[...]
+  oce[...],
+  patchwork[...]
   )
 
 # base ggplot theme
@@ -241,7 +242,82 @@ ggplot(apaecosum, aes(x = factor(mo), y = ecomean, color = var)) +
   )
 ```
  
- 
+According to our "rules of thumb", detiding is assumed to be effective if the mean estimates are similar between observed and detided results, whereas the variance is expected to decrease.  Long-term averages (e.g., at the month or longer scale) should not change dramatically with detiding because tidal advection acts primarily at shorter time scales.  As a result, noise (or variance) of the estimates will be reduced, but overall rates (means) should be similar between results. Changes in averages may suggest over-smoothing has occurred with detiding. 
+
+The plots show mean and standard deviation of production and respiration between observed and detided results.  The estimates are grouped by season (as quarters) with 1:1 shown as dashed lines and regressions shown as blue lines. 
+
+```{r meansdmo, fig.height = 7.5, fig.width = 7}
+# monthly mean and sd metab
+meansdmos <- list(
+    'Observed' = metevalobs$mos,
+    'Detided' = metevaldtd$mos
+  ) %>% 
+  enframe %>% 
+  unnest('value') %>% 
+  select(matches('name|sd|mean|month')) %>% 
+  gather('var', 'val', -name, -month)%>% 
+  mutate(
+    var = gsub('Pg$', ' Pg', var),
+    var = gsub('Rt$', ' Rt', var),
+    name = factor(name, levels = c('Observed', 'Detided')), 
+    val = case_when(
+      var == c('mean Rt') ~ abs(val), 
+      T ~ val
+    ), 
+    qrt = case_when(
+      month %in% c('01', '02', '03') ~ 'JFM', 
+      month %in% c('04', '05', '06') ~ 'AMJ', 
+      month %in% c('07', '08', '09') ~ 'JAS', 
+      month %in% c('10', '11', '12') ~ 'OND', 
+    ), 
+    qrt = factor(qrt, levels = c('JFM', 'AMJ', 'JAS', 'OND'))
+  ) %>% 
+  spread(name, val) %>% 
+  separate(var, c('stat', 'var'))
+
+toplo1 <- meansdmos %>% 
+  filter(stat == 'mean')
+toplo2 <- meansdmos %>% 
+  filter(stat == 'sd')
+rng1 <- toplo1 %>% 
+  pull(Observed, Detided) %>% 
+  range
+rng2 <- toplo2 %>% 
+  pull(Observed, Detided) %>% 
+  range
+
+p1 <- ggplot(toplo1, aes(x = Observed, y = Detided)) +
+  geom_abline(intercept = 0, slope = 1, linetype = 'dashed') +
+  geom_point(size = 4, alpha = 0.5, aes(color = qrt)) + 
+  geom_smooth(method = 'lm', se = F) +
+  facet_wrap(~var) +
+  coord_cartesian(xlim = rng1, ylim = rng1) +
+  labs(
+    subtitle = 'Mean monthly metabolism (mmol/m2/d)',
+    color = 'Quarter'
+  )
+p2 <- ggplot(toplo2, aes(x = Observed, y = Detided)) +
+  geom_abline(intercept = 0, slope = 1, linetype = 'dashed') +
+  geom_point(size = 4, alpha = 0.5, aes(color = qrt)) + 
+  geom_smooth(method = 'lm', se = F) +
+  facet_wrap(~var) +
+  coord_cartesian(xlim = rng2, ylim = rng2) +
+  labs(
+    subtitle = 'St. dev. monthly metabolism (mmol/m2/d)',
+    color = 'Quarter'
+  )
+
+p1 + p2 + plot_layout(ncol = 1, guides = 'collect') &  
+  thm +
+  theme(
+    panel.border = element_rect(fill = NA),
+    panel.grid.major.x = element_line(),
+    legend.position = 'right', 
+    legend.title = element_text()
+  ) 
+```
+
+
 The summer months are pretty suspect for the detided results.  Looking at the results from the `evalcor` function suggests that this is a bad time for detiding. But then again, so are the winter months...
 
 ```{r, fig.height = 5, fig.width = 7}
