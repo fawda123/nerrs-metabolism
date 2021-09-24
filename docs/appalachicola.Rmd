@@ -28,7 +28,7 @@ box::use(
   oce[...]
   )
 
-# base ggplot themef
+# base ggplot theme
 thm <- theme_minimal(base_size = 14) + 
   theme(
     legend.title = element_blank(), 
@@ -135,7 +135,11 @@ anomcmp <- list(
   unnest('value') %>% 
   select(matches('name|anom')) %>% 
   gather('var', 'val', -name) %>% 
-  mutate(var = gsub('anom', '', var))
+  mutate(
+    var = gsub('anom', '', var), 
+    name = factor(name, levels = c('Observed', 'Detided'))
+  )
+
 
 # monthly anomalies
 anommos <- list(
@@ -146,7 +150,10 @@ anommos <- list(
   unnest('value') %>% 
   select(matches('name|anom|month')) %>% 
   gather('var', 'val', -name, -month)%>% 
-  mutate(var = gsub('anom', '', var))
+  mutate(
+    var = gsub('anom', '', var), 
+    name = factor(name, levels = c('Observed', 'Detided'))
+  )
 
 anomcmp
 anommos
@@ -204,7 +211,8 @@ apaecosum <- list(
   enframe %>% 
   unnest('value') %>% 
   mutate(
-    mo = month(Date)
+    mo = month(Date),
+    name = factor(name, levels = c('Observed', 'Detided'))
   ) %>% 
   select(matches('name|mo|^Pg$|^Rt$')) %>% 
   gather('var', 'val', -name, -mo) %>% 
@@ -294,7 +302,10 @@ apaeco <- list(
   ) %>% 
   enframe %>% 
   unnest('value') %>% 
-  left_join(apapar, by = 'Date')
+  left_join(apapar, by = 'Date') %>% 
+  mutate(
+    name = factor(name, levels = c('Observed', 'Detided'))
+  )
 apaeco
 ```
 
