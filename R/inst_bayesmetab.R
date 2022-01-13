@@ -5,6 +5,7 @@ library(BASEmetab)
 # devtools::load_all('../BASEmetab')
 library(tidyverse)
 library(lubridate)
+library(patchwork)
 library(R2jags)
 library(foreach)
 library(doParallel)
@@ -19,28 +20,78 @@ results.dir <- here('output')
 data.dir <- results.dir
 
 # input data
-dat_input <- read.csv(here('data-raw/apadb May 2018 WQ MET.csv')) %>% 
+# paris mmol/m2 total for 15 minute obs, convert to umol/m2/s
+# sal is ppt, should be ppt
+# DO is mg/l, should be mg/l
+# water temp is C, should be C
+# BP is mb, should be atm
+# WSpd is m/s, should be m/s
+# last line is to fill NA (only 3 values) with last value
+#
+# note that NA values filled with means
+# input data filtered to hours obs
+dat_input <- read.csv(here('data-raw/apadb May 2018 WQ MET.csv')) %>%
   mutate(
-    DateTimeStamp = mdy_hm(DateTimeStamp, tz = 'America/Jamaica')
+    DateTimeStamp = ymd_hms(DateTimeStamp, tz = 'America/Jamaica'),
+    DateTimeStamp = as.character(DateTimeStamp),
+    Par = Par * 1000 / (15 * 60), # convert to umol and per second
+    BP = BP / 1013 # mb to atm
+  ) %>%
+  separate(DateTimeStamp, c('Date', 'Time'), sep = ' ') %>%
+  select(Date, Time, I = Par, tempC = Temp, DO.meas = DO_obs, atmo.pressure = BP, salinity = Sal) %>% 
+  mutate_if(anyNA, function(x) ifelse(is.na(x), mean(x, na.rm = T), x)) %>% 
+  filter(gsub('^\\d\\d\\:|\\:\\d\\d$', '', Time) == "00")
+
+# # four days only
+# dat_input <- dat_input[1:96, ] 
+
+write.csv(dat_input, here('output/dat_input.csv'), row.names = F)
+
+#run model,takes a few minutes
+
+results <- bayesmetab(data.dir, results.dir, interval = 3600, K.est = T, instant = T, update.chains = T)
+
+# plot results, daily vs instant
+
+daily <- read.csv('output/BASE_results_2022-01-13 085621.csv') %>% 
+  select(Date, GPP = GPP.mean, ER= ER.mean, NEP = NEP.mean) %>% 
+  mutate(
+    ER = -1 * ER, 
+    Date = lubridate::ymd(Date)
   ) %>% 
-  separate(DateTimeStamp, c('Date', 'Time'), sep = ' ') %>% 
-  select(Date, Time, tempC = Temp, DO.meas = DO_obs, atmo.pressure = BP, salinity = Sal)
+  pivot_longer(-Date, names_to = 'var', values_to = 'val')
 
-write.csv(dat_input, here('output/dat_input.csv'))
+p1 <- ggplot(daily, aes(x = Date, y = val, color = var)) + 
+  geom_line() + 
+  geom_point() +
+  theme_minimal() + 
+  labs(
+    y = 'O2 mg/L/d', 
+    x = NULL, 
+    color = NULL
+  )
 
-#run model
+instant <- read.csv('output/instantaneous_rates_2022-01-13 085621.csv') %>% 
+  select(Date, GPP = GPP.instant, ER= ER.instant) %>% 
+  mutate(
+    ER = -1 * ER, 
+    hm = rep(0:23, length(unique(Date))), 
+    NEP = GPP + ER
+  ) %>% 
+  unite('Date', Date, hm, sep = ' ') %>% 
+  mutate(
+    Date = ymd_h(Date, tz = 'America/Jamaica')
+  ) %>% 
+  pivot_longer(-Date, names_to = 'var', values_to = 'val')
 
-# cat point bottom depth (mean of tidal vector plus 0.3m)
-H <- 1.852841
+p2 <- ggplot(instant, aes(x = Date, y = val, color = var)) + 
+  geom_line() + 
+  geom_point() +
+  theme_minimal() + 
+  labs(
+    y = 'O2 mg/L/hr', 
+    x = NULL, 
+    color = NULL
+  )
 
-# areal K, 0.80 is m/d mean wanninkhof for the year at apa 2012
-Kareal <- 0.8040253
-
-# volumetric
-kvol <- Kareal / H
-
-results <- bayesmetab(data.dir, results.dir, interval = 900, K.est = F, K.meas.mean = kvol, K.meas.sd = 1e-9, instant = T, update.chains = T)
-
-# remove image files from output
-file.remove(list.files(path = results.dir, pattern = '\\.jpg$', full.names = T))
-
+p1 + p2 + plot_layout(ncol = 1, guides = 'collect')
