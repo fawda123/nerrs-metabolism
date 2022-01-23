@@ -45,7 +45,7 @@ dat_input <- read.csv(here('data-raw/apadb May 2018 WQ MET.csv')) %>%
 # # four days only
 # dat_input <- dat_input[1:96, ] 
 
-write.csv(dat_input, here(paste0(data.dir, '/dat_input.csv')))
+write.csv(dat_input, here(paste0(data.dir, '/dat_input.csv')), row.names = F)
 
 #run model,takes a few minutes
 
