@@ -19,7 +19,7 @@ registerDoParallel(cl)
 data.dir <- here('BASEmetab-res/input1')
 results.dir <- here('BASEmetab-res/output1')
 
-# input data
+# # input data for BASEmetab
 # paris mmol/m2 total for 15 minute obs, convert to umol/m2/s
 # sal is ppt, should be ppt
 # DO is mg/l, should be mg/l
@@ -49,7 +49,12 @@ write.csv(dat_input, here(paste0(data.dir, '/dat_input.csv')), row.names = F)
 
 #run model,takes a few minutes
 
-results <- bayesmetab(data.dir, results.dir, interval = 3600, K.est = T, instant = T, update.chains = T)
+# 0.6694192 is average ecometab results at cat point, from inst_ecometab2
+K.meas.mean <- 0.6694192 / 1.5
+K.meas.sd <- 1e-9
+
+results <- bayesmetab(data.dir, results.dir, interval = 3600, K.est = F, K.meas.mean = K.meas.mean, 
+                      K.meas.sd = K.meas.sd, instant = T, update.chains = T)
 
 # plot results, daily vs instant
 
@@ -58,7 +63,10 @@ daily <- list.files(results.dir, pattern = '^BASE_results', full.names = T) %>%
   select(Date, GPP = GPP.mean, ER= ER.mean, NEP = NEP.mean) %>% 
   mutate(
     ER = -1 * ER, 
-    Date = lubridate::ymd(Date)
+    Date = lubridate::ymd(Date), 
+    ER = ER * 1 / 32 * 1000 * 1.5, 
+    GPP = GPP * 1 / 32 * 1000 * 1.5, 
+    NEP = NEP * 1 / 32 * 1000 * 1.5
   ) %>% 
   pivot_longer(-Date, names_to = 'var', values_to = 'val')
 
@@ -67,9 +75,10 @@ p1 <- ggplot(daily, aes(x = Date, y = val, color = var)) +
   geom_point() +
   theme_minimal() + 
   labs(
-    y = 'O2 mg/L/d', 
+    y = 'O2 mmol/m2/d', 
     x = NULL, 
-    color = NULL
+    color = NULL, 
+    subtitle = '(a) BASEmetab, 2012 Dry Bar, NEM constant gas'
   )
 
 instant <- list.files(results.dir, pattern = '^instantaneous', full.names = T) %>% 
@@ -78,7 +87,10 @@ instant <- list.files(results.dir, pattern = '^instantaneous', full.names = T) %
   mutate(
     ER = -1 * ER, 
     hm = rep(0:23, length(unique(Date))), 
-    NEP = GPP + ER
+    NEP = GPP + ER, 
+    ER = ER * 24 * 1 / 32 * 1000 * 1.5, 
+    GPP = GPP  * 24 * 1 / 32 * 1000 * 1.5, 
+    NEP = NEP * 24 * 1 / 32 * 1000 * 1.5
   ) %>% 
   unite('Date', Date, hm, sep = ' ') %>% 
   mutate(
@@ -91,7 +103,7 @@ p2 <- ggplot(instant, aes(x = Date, y = val, color = var)) +
   geom_point() +
   theme_minimal() + 
   labs(
-    y = 'O2 mg/L/hr', 
+    y = 'O2 mmol/m2/d', 
     x = NULL, 
     color = NULL
   )
