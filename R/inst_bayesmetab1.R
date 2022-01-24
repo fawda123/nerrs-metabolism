@@ -77,8 +77,7 @@ p1 <- ggplot(daily, aes(x = Date, y = val, color = var)) +
   labs(
     y = 'O2 mmol/m2/d', 
     x = NULL, 
-    color = NULL, 
-    subtitle = '(a) BASEmetab, 2012 Dry Bar, NEM constant gas'
+    color = NULL
   )
 
 instant <- list.files(results.dir, pattern = '^instantaneous', full.names = T) %>% 
