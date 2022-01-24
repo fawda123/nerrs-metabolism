@@ -29,26 +29,13 @@ instant <- ecometab(dat_input, tz = 'America/Jamaica', DO_var = 'DO_obs', metab_
 
 
 toplo1 <- daily %>% 
-  select(Date, NEP = NEM) %>% 
-  mutate(mo = month(Date)) %>% 
-  group_by(mo) %>% 
-  summarise(
-    NEPave = mean(NEP, na.rm = T),
-    NEPhi = t.test(NEP)$conf.int[2], 
-    NEPlo = t.test(NEP)$conf.int[1]
-  )
+  select(Date, NEP = NEM, ER = Rt, GPP = Pg) %>% 
+  mutate(
+    Date = ymd(Date, tz = 'America/Jamaica')
+  ) %>% 
+  pivot_longer(-Date, names_to = 'var', values_to = 'val')
 
-p1 <- ggplot(toplo1, aes(x = factor(mo), y = NEPave)) + 
-  geom_point() +
-  geom_errorbar(aes(ymin = NEPlo, ymax = NEPhi), width = 0.1) +
-  theme_minimal() + 
-  labs(
-    y = 'O2 mmol/m2/d', 
-    x = NULL, 
-    color = NULL
-  )
-
-p2 <- ggplot(toplo1, aes(x = Date, y = val, color = var)) + 
+p1 <- ggplot(toplo1, aes(x = Date, y = val, color = var)) + 
   geom_line() + 
   geom_point() +
   theme_minimal() + 
