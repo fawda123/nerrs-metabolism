@@ -10,7 +10,10 @@ Misc. R scripts:
 * `R/inst_bayesmetab1.R`: 2018 May metabolism estimates at Apalachicola Dry Bar using BASEmetab, fixed gas exchange
 * `R/inst_bayesmetab2.R`: 2002 to 2020 metabolism estimates at Apalachicola Dry Bar using BASEmetab, fixed gas exchange
 * `R/inst_bayesmetab3.R`: 2012 metabolism estimates at Apalachicola Cat Point using BASEmetab, model-estimated gas exchange
-* `R/inst_bayesmetab3.R`: 2012 metabolism estimates at Apalachicola Cat Point using BASEmetab, fixed gas exchange
+* `R/inst_bayesmetab4.R`: 2012 metabolism estimates at Apalachicola Cat Point using BASEmetab, fixed gas exchange
+* `R/inst_bayesmetab5.R`: 2015 Aug metabolism estimates at Apalachicola Dry Bar using BASEmetab, fixed gas exchange
+* `R/inst_bayesmetab6.R`: 2017 Dec metabolism estimates at Apalachicola Dry Bar using BASEmetab, fixed gas exchange
 * `R/inst_ecometab1.R`: 2002 to 2020 metabolism estimates at Apalachicola Dry Bar using WtRegDO
 * `R/inst_ecometab2.R`: 2018 May metabolism estimates at Apalachicola Dry Bar using WtRegDO
-* `R/inst_ecometab3.R`: 2012 metabolism estimates at Apalachicola Cat Point using WtRegDO
+* `R/inst_ecometab3.R`: 2012 metabolism estimates at Apalachicola Cat Point using WtRegD* 
+* `R/inst_ecometab4.R`: 2015 Aug and 2017 Dec metabolism estimates at Apalachicola Cat Point using WtRegDO
