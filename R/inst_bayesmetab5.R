@@ -1,4 +1,4 @@
-# Aug 2015 dry bar
+# Aug 2017 dry bar
 
 # Running BASEmetab model -------------------------------------------------
 
@@ -32,11 +32,12 @@ results.dir <- here('BASEmetab-res/output5')
 #
 # note that NA values filled with means
 # input data filtered to hours obs
-dat_input <- read_excel(here('data-raw/Best Aug and Dec data 012421.xlsx'), sheet = 'Aug 2015') %>% 
+dat_input <- read_excel(here('data-raw/Aug Dec 2017 data 020722.xlsx')) %>% 
   mutate(
     DateTimeStamp = force_tz(DateTimeStamp, tz = 'America/Jamaica')
   ) %>% 
   mutate_if(is.character, as.numeric) %>% 
+  filter(month(DateTimeStamp) == 8) %>% 
   mutate(
     DateTimeStamp = as.character(DateTimeStamp),
     Par = Par * 1000 / (15 * 60), # convert to umol and per second
@@ -55,8 +56,8 @@ write.csv(dat_input, here(paste0(data.dir, '/dat_input.csv')), row.names = F)
 
 #run model,takes a few minutes
 
-# 0.4183685 is average ecometab KL for Aug 2015, from inst_ecometab4
-K.meas.mean <- 0.4183685 / 1.5
+# 0.3629641 is average ecometab KL for Aug 2017, from inst_ecometab4
+K.meas.mean <- 0.3629641 / 1.5
 K.meas.sd <- 1e-9
 
 results <- bayesmetab(data.dir, results.dir, interval = 3600, K.est = F, K.meas.mean = K.meas.mean, 

@@ -1,4 +1,4 @@
-# instant ecometab Aug 2015 and Dec 2017 dry bar
+# instant ecometab Aug 2017 and Dec 2017 dry bar
 
 library(tidyverse)
 library(readxl)
@@ -7,7 +7,7 @@ library(here)
 library(lubridate)
 library(patchwork)
 
-# Aug 2015 ----------------------------------------------------------------
+# Aug 2017 ----------------------------------------------------------------
 
 # # input data for ecometab from WtRegDO
 # par is mmol/m2 total for 15 minute obs, convert to umol/m2/s
@@ -18,11 +18,12 @@ library(patchwork)
 # BP is mb, should be mb
 # WSpd is m/s, should be m/s
 # Tide is m, should be m
-dat_input1 <- read_excel(here('data-raw/Best Aug and Dec data 012421.xlsx'), sheet = 'Aug 2015') %>% 
+dat_input1 <- read_excel(here('data-raw/Aug Dec 2017 data 020722.xlsx')) %>% 
   mutate(
     DateTimeStamp = force_tz(DateTimeStamp, tz = 'America/Jamaica')
   ) %>% 
   mutate_if(is.character, as.numeric) %>% 
+  filter(month(DateTimeStamp) == 8) %>% 
   select(DateTimeStamp, Temp, Sal, DO_obs, ATemp, BP, WSpd, Tide) %>%  
   mutate_if(anyNA, function(x) ifelse(is.na(x), mean(x, na.rm = T), x)) %>%
   filter(minute(DateTimeStamp) == 0) %>% 
@@ -45,11 +46,12 @@ instant1 <- ecometab(dat_input1, tz = 'America/Jamaica', DO_var = 'DO_obs', meta
 # BP is mb, should be mb
 # WSpd is m/s, should be m/s
 # Tide is m, should be m
-dat_input2 <- read_excel(here('data-raw/Best Aug and Dec data 012421.xlsx'), sheet = 'Dec 2017') %>% 
+dat_input2 <- read_excel(here('data-raw/Aug Dec 2017 data 020722.xlsx')) %>% 
   mutate(
     DateTimeStamp = force_tz(DateTimeStamp, tz = 'America/Jamaica')
   ) %>% 
   mutate_if(is.character, as.numeric) %>% 
+  filter(month(DateTimeStamp) == 12) %>% 
   select(DateTimeStamp, Temp, Sal, DO_obs, ATemp, BP, WSpd, Tide) %>%  
   mutate_if(anyNA, function(x) ifelse(is.na(x), mean(x, na.rm = T), x)) %>%
   filter(minute(DateTimeStamp) == 0) %>% 

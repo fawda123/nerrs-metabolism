@@ -32,11 +32,12 @@ results.dir <- here('BASEmetab-res/output6')
 #
 # note that NA values filled with means
 # input data filtered to hours obs
-dat_input <- read_excel(here('data-raw/Best Aug and Dec data 012421.xlsx'), sheet = 'Dec 2017') %>% 
+dat_input <- read_excel(here('data-raw/Aug Dec 2017 data 020722.xlsx')) %>% 
   mutate(
     DateTimeStamp = force_tz(DateTimeStamp, tz = 'America/Jamaica')
   ) %>% 
   mutate_if(is.character, as.numeric) %>% 
+  filter(month(DateTimeStamp) == 12) %>% 
   mutate(
     DateTimeStamp = as.character(DateTimeStamp),
     Par = Par * 1000 / (15 * 60), # convert to umol and per second
