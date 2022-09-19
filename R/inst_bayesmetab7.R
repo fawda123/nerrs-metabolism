@@ -53,6 +53,7 @@ write.csv(dat_input, here(paste0(data.dir, '/dat_input.csv')), row.names = F)
 #run model,takes a few minutes
 
 # 0.4948762 is average ecometab results at cat point, from inst_ecometab5, mean of KL from instant output
+# 1.5 is mean height at dry bar
 K.meas.mean <- 0.4948762 / 1.5
 K.meas.sd <- 1e-9
 

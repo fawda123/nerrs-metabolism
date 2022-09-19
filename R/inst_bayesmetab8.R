@@ -53,7 +53,8 @@ write.csv(dat_input, here(paste0(data.dir, '/dat_input.csv')), row.names = F)
 #run model,takes a few minutes
 
 # 0.5246162 is average ecometab results at cat point, from inst_ecometab6, mean of KL from instant output
-K.meas.mean <- 0.5246162 / 1.5
+# 2.2 is mean height at pilot's cove
+K.meas.mean <- 0.5246162 / 2.2
 K.meas.sd <- 1e-9
 
 results <- bayesmetab(data.dir, results.dir, interval = 3600, K.est = F, K.meas.mean = K.meas.mean, 
@@ -67,9 +68,9 @@ daily <- list.files(results.dir, pattern = '^BASE_results', full.names = T) %>%
   mutate(
     ER = -1 * ER, 
     Date = lubridate::ymd(Date), 
-    ER = ER * 1 / 32 * 1000 * 1.5, 
-    GPP = GPP * 1 / 32 * 1000 * 1.5, 
-    NEP = NEP * 1 / 32 * 1000 * 1.5
+    ER = ER * 1 / 32 * 1000 * 2.2, 
+    GPP = GPP * 1 / 32 * 1000 * 2.2, 
+    NEP = NEP * 1 / 32 * 1000 * 2.2
   ) %>% 
   pivot_longer(-Date, names_to = 'var', values_to = 'val')
 
@@ -90,9 +91,9 @@ instant <- list.files(results.dir, pattern = '^instantaneous', full.names = T) %
     ER = -1 * ER, 
     hm = rep(0:23, length(unique(Date))), 
     NEP = GPP + ER, 
-    ER = ER * 24 * 1 / 32 * 1000 * 1.5, 
-    GPP = GPP  * 24 * 1 / 32 * 1000 * 1.5, 
-    NEP = NEP * 24 * 1 / 32 * 1000 * 1.5
+    ER = ER * 24 * 1 / 32 * 1000 * 2.2, 
+    GPP = GPP  * 24 * 1 / 32 * 1000 * 2.2, 
+    NEP = NEP * 24 * 1 / 32 * 1000 * 2.2
   ) %>% 
   unite('Date', Date, hm, sep = ' ') %>% 
   mutate(
