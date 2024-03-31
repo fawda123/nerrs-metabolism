@@ -7,6 +7,7 @@ Materials for evaluating metabolism estimates and detiding for NERRS sites
 
 Misc. R scripts: 
 
+* `R/apadecproc.R`: EBASE processing of observed and detided DO for ~20 years of data at Apalachicola Cat Point
 * `R/inst_bayesmetab1.R`: 2018 May metabolism estimates at Apalachicola Dry Bar using BASEmetab, fixed gas exchange
 * `R/inst_bayesmetab2.R`: 2002 to 2020 metabolism estimates at Apalachicola Dry Bar using BASEmetab, fixed gas exchange
 * `R/inst_bayesmetab3.R`: 2012 metabolism estimates at Apalachicola Cat Point using BASEmetab, model-estimated gas exchange
