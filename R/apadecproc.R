@@ -29,7 +29,7 @@ cl <- makeCluster(ncores - 2)
 registerDoParallel(cl)
 
 # ebase
-apadecobs <- ebase(tmp, interval = 900, Z = tomod$Depth, ndays = 7, progress = getwd(), n.chains = 4,
+apadecobs <- ebase(tomod, interval = 900, Z = tomod$Depth, ndays = 7, progress = getwd(), n.chains = 4,
              bprior = c(0.251, 1e-6))
 
 stopCluster(cl)
