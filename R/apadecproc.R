@@ -34,7 +34,7 @@ apadecobs <- ebase(tmp, interval = 900, Z = tomod$Depth, ndays = 7, progress = g
 
 stopCluster(cl)
 
-save()
+save(apadecobs, file = here('data/apadecobs.RData'))
 
 # EBASE detided -------------------------------------------------------------------------------
 
@@ -53,3 +53,4 @@ apadecdtd <- ebase(tomod, interval = 900, Z = tomod$Depth, ndays = 7, progress =
 
 stopCluster(cl)
 
+save(apadecdtd, file = here('data/apadecdtd.RData'))
