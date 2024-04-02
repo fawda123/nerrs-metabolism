@@ -1,7 +1,6 @@
 library(dplyr)
 library(lubridate)
-# library(EBASE)
-devtools::load_all('../EBASE')
+library(EBASE)
 library(doParallel)
 library(foreach)
 library(here)
@@ -25,6 +24,7 @@ tomod <- apadat |>
   select(-DO_dtd)
 
 yrs <- unique(year(tomod$DateTimeStamp))
+yrs <- yrs[yrs > 2005]
 
 apadecobs <- NULL
 for(yr in yrs){
@@ -49,8 +49,8 @@ for(yr in yrs){
 
 }
 
-apadecobs20022005 <- apadecobs
-save(apadecobs20022005, file = here('data/apadecobs20022005.RData'))
+# apadecobs20022005 <- apadecobs
+# save(apadecobs20022005, file = here('data/apadecobs20022005.RData'))
 
 save(apadecobs, file = here('data/apadecobs.RData'))
 
@@ -76,7 +76,7 @@ for(yr in yrs){
     filter(year(DateTimeStamp) == yr)
   
   # ebase
-  res <- ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = getwd(), n.chains = 4,
+  res <- ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
                   bprior = c(0.251, 1e-6))
 
   stopCluster(cl)
