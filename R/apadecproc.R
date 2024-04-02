@@ -24,7 +24,6 @@ tomod <- apadat |>
   select(-DO_dtd)
 
 yrs <- unique(year(tomod$DateTimeStamp))
-yrs <- yrs[yrs > 2005]
 
 apadecobs <- NULL
 for(yr in yrs){
@@ -49,9 +48,6 @@ for(yr in yrs){
 
 }
 
-# apadecobs20022005 <- apadecobs
-# save(apadecobs20022005, file = here('data/apadecobs20022005.RData'))
-
 save(apadecobs, file = here('data/apadecobs.RData'))
 
 # EBASE detided -------------------------------------------------------------------------------
@@ -61,6 +57,7 @@ tomod <- apadat |>
   rename(DO_obs = DO_dtd)
 
 yrs <- unique(year(tomod$DateTimeStamp))
+yrs <- yrs[yrs > 2007]
 
 apadecdtd <- NULL
 for(yr in yrs){
