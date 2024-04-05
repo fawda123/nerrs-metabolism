@@ -5,7 +5,6 @@ library(foreach)
 library(here)
 library(plotly)
 
-
 # apa cat point -------------------------------------------------------------------------------
 
 # prep apacp data
@@ -127,3 +126,117 @@ p2 <- plot_ly(subset(apacpdec, Type == 'Detided'), x = ~Date, y = ~P, type = 'sc
 
 subplot(p1, p2, nrows = 2, shareX = T, titleY = T)
 
+# apa dry bar ---------------------------------------------------------------------------------
+
+# prep apadb data
+apadbdatraw <- read.csv(here('data-raw/db_ebase_911.csv'))
+apadbdat <- apadbdatraw |> 
+  mutate(
+    DateTimeStamp = ymd_hms(DateTimeStamp, tz = 'America/Jamaica'), 
+    Depth = Depth + 0.3
+  ) |> 
+  rename(
+    Sal = Sal_ppt ,
+    PAR = PAR_W.m2
+  ) |> 
+  arrange(DateTimeStamp)
+
+##
+# EBASE observed
+
+tomod <- apadbdat |> 
+  select(-DO_dtd)
+
+yrs <- unique(year(tomod$DateTimeStamp))
+
+apadbdecobs <- NULL
+for(yr in yrs){
+  
+  cat(yr, '\t')
+  
+  # setup parallel backend
+  ncores <- detectCores()
+  cl <- makeCluster(ncores - 2)
+  registerDoParallel(cl)
+  
+  tomodsub <- tomod |> 
+    filter(year(DateTimeStamp) == yr)
+  
+  # ebase
+  res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+               bprior = c(0.251, 1e-6)), silent = T)
+  
+  stopCluster(cl)
+  
+  while(inherits(res, 'try-error')){
+    
+    ncores <- detectCores()
+    cl <- makeCluster(ncores - 2)
+    registerDoParallel(cl)
+    
+    cat('retrying...\t')
+    
+    # ebase
+    res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+                     bprior = c(0.251, 1e-6)), silent = T)
+    
+    stopCluster(cl)
+    
+  }
+
+  apadbdecobs <- rbind(apadbdecobs, res)
+  
+}
+
+save(apadbdecobs, file = here('data/apadbdecobs.RData'))
+
+##
+# EBASE detided
+
+tomod <- apadbdat |> 
+  select(-DO_obs) |> 
+  rename(DO_obs = DO_dtd)
+
+yrs <- unique(year(tomod$DateTimeStamp))
+yrs <- yrs[yrs > 2007]
+
+apadbdecdtd <- NULL
+for(yr in yrs){
+  
+  cat(yr, '\t')
+  
+  # setup parallel backend
+  ncores <- detectCores()
+  cl <- makeCluster(ncores - 2)
+  registerDoParallel(cl)
+  
+  tomodsub <- tomod |> 
+    filter(year(DateTimeStamp) == yr)
+  
+  # ebase
+  res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+               bprior = c(0.251, 1e-6)), silent = T)
+  
+  stopCluster(cl)
+  
+  while(inherits(res, 'try-error')){
+    
+    ncores <- detectCores()
+    cl <- makeCluster(ncores - 2)
+    registerDoParallel(cl)
+    
+    cat('retrying...\t')
+    
+    # ebase
+    res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+                     bprior = c(0.251, 1e-6)), silent = T)
+    
+    stopCluster(cl)
+    
+  }
+  
+  apadbdecdtd <- rbind(apadbdecdtd, res)
+  
+}
+
+save(apadbdecdtd, file = here('data/apadbdecdtd.RData'))
