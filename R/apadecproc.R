@@ -5,9 +5,12 @@ library(foreach)
 library(here)
 library(plotly)
 
-# prep apa data
-apadatraw <- read.csv(here('data-raw/cp_ebase_911.csv'))
-apadat <- apadatraw |> 
+
+# apa cat point -------------------------------------------------------------------------------
+
+# prep apacp data
+apacpdatraw <- read.csv(here('data-raw/cp_ebase_911.csv'))
+apacpdat <- apacpdatraw |> 
   mutate(
     DateTimeStamp = mdy_hm(DateTimeStamp, tz = 'America/Jamaica'), 
     Depth = Depth + 0.3
@@ -18,14 +21,15 @@ apadat <- apadatraw |>
   ) |> 
   arrange(DateTimeStamp)
 
-# EBASE observed ------------------------------------------------------------------------------
+##
+# EBASE observed
 
-tomod <- apadat |> 
+tomod <- apacpdat |> 
   select(-DO_dtd)
 
 yrs <- unique(year(tomod$DateTimeStamp))
 
-apadecobs <- NULL
+apacpdecobs <- NULL
 for(yr in yrs){
   
   cat(yr, '\t')
@@ -44,22 +48,23 @@ for(yr in yrs){
 
   stopCluster(cl)
   
-  apadecobs <- rbind(apadecobs, res)
+  apacpdecobs <- rbind(apacpdecobs, res)
 
 }
 
-save(apadecobs, file = here('data/apadecobs.RData'))
+save(apacpdecobs, file = here('data/apacpdecobs.RData'))
 
-# EBASE detided -------------------------------------------------------------------------------
+##
+# EBASE detided
 
-tomod <- apadat |> 
+tomod <- apacpdat |> 
   select(-DO_obs) |> 
   rename(DO_obs = DO_dtd)
 
 yrs <- unique(year(tomod$DateTimeStamp))
 yrs <- yrs[yrs > 2007]
 
-apadecdtd <- NULL
+apacpdecdtd <- NULL
 for(yr in yrs){
   
   cat(yr, '\t')
@@ -78,22 +83,23 @@ for(yr in yrs){
 
   stopCluster(cl)
   
-  apadecdtd <- rbind(apadecdtd, res)
+  apacpdecdtd <- rbind(apacpdecdtd, res)
   
 }
 
-save(apadecdtd, file = here('data/apadecdtd.RData'))
+save(apacpdecdtd, file = here('data/apacpdecdtd.RData'))
 
-# view results --------------------------------------------------------------------------------
+##
+# view results
 
-data(apadecobs)
-data(apadecdtd)
+data(apacpdecobs)
+data(apacpdecdtd)
 
 ylab <- 'mmol O2 m-2 d-1)'
 
-apadec <- list(
-  Observed = apadecobs, 
-  Detided = apadecdtd
+apacpdec <- list(
+  Observed = apacpdecobs, 
+  Detided = apacpdecdtd
 ) |> 
   enframe(name = 'Type') |> 
   unnest(value) |> 
@@ -105,14 +111,14 @@ apadec <- list(
   summarise(value = mean(value, na.rm = T), .by = c(Type, Date, name)) |> 
   pivot_wider(names_from = name, values_from = value)
 
-p1 <- plot_ly(subset(apadec, Type == 'Observed'), x = ~Date, y = ~P, type = 'scatter', mode = 'lines', name = 'P') |>
+p1 <- plot_ly(subset(apacpdec, Type == 'Observed'), x = ~Date, y = ~P, type = 'scatter', mode = 'lines', name = 'P') |>
   add_trace(y = ~-R, mode = 'lines', name = 'R') |>
   add_trace(y = ~D, mode = 'lines', name = 'D') |>
   add_trace(y = ~NEM, mode = 'lines', name = 'NEM') |>
   layout(xaxis = list(title = ''),
          yaxis = list(title = paste('Observed', ylab)))
 
-p2 <- plot_ly(subset(apadec, Type == 'Detided'), x = ~Date, y = ~P, type = 'scatter', mode = 'lines', name = 'P') |>
+p2 <- plot_ly(subset(apacpdec, Type == 'Detided'), x = ~Date, y = ~P, type = 'scatter', mode = 'lines', name = 'P') |>
   add_trace(y = ~-R, mode = 'lines', name = 'R') |>
   add_trace(y = ~D, mode = 'lines', name = 'D') |>
   add_trace(y = ~NEM, mode = 'lines', name = 'NEM') |>
