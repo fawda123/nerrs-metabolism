@@ -292,3 +292,41 @@ for(yr in yrs){
 }
 
 save(apadbdecdtd, file = here('data/apadbdecdtd.RData'))
+
+##
+# view results
+
+data(apadbdecobs)
+data(apadbdecdtd)
+
+ylab <- 'mmol O2 m-2 d-1)'
+
+apadbdec <- list(
+  Observed = apadbdecobs, 
+  Detided = apadbdecdtd
+) |> 
+  enframe(name = 'Type') |> 
+  unnest(value) |> 
+  select(Type, Date, P, R, D) |> 
+  mutate(
+    NEM = P - R
+  ) |> 
+  pivot_longer(cols = -matches('Date|Type')) |> 
+  summarise(value = mean(value, na.rm = T), .by = c(Type, Date, name)) |> 
+  pivot_wider(names_from = name, values_from = value)
+
+p1 <- plot_ly(subset(apadbdec, Type == 'Observed'), x = ~Date, y = ~P, type = 'scatter', mode = 'lines', name = 'P') |>
+  add_trace(y = ~-R, mode = 'lines', name = 'R') |>
+  add_trace(y = ~D, mode = 'lines', name = 'D') |>
+  add_trace(y = ~NEM, mode = 'lines', name = 'NEM') |>
+  layout(xaxis = list(title = ''),
+         yaxis = list(title = paste('Observed', ylab)))
+
+p2 <- plot_ly(subset(apadbdec, Type == 'Detided'), x = ~Date, y = ~P, type = 'scatter', mode = 'lines', name = 'P') |>
+  add_trace(y = ~-R, mode = 'lines', name = 'R') |>
+  add_trace(y = ~D, mode = 'lines', name = 'D') |>
+  add_trace(y = ~NEM, mode = 'lines', name = 'NEM') |>
+  layout(xaxis = list(title = ''),
+         yaxis = list(title = paste('Detided', ylab)))
+
+subplot(p1, p2, nrows = 2, shareX = T, titleY = T)
