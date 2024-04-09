@@ -4,6 +4,7 @@ library(doParallel)
 library(foreach)
 library(here)
 library(plotly)
+library(lubridate)
 
 # apa cat point -------------------------------------------------------------------------------
 
@@ -42,10 +43,30 @@ for(yr in yrs){
     filter(year(DateTimeStamp) == yr)
   
   # ebase
-  res <- ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
-             bprior = c(0.251, 1e-6))
+  res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+             bprior = c(0.251, 1e-6)), silent = T)
 
   stopCluster(cl)
+  
+  i <- 1
+  while(inherits(res, 'try-error')){
+    
+    ncores <- detectCores()
+    cl <- makeCluster(ncores - 2)
+    registerDoParallel(cl)
+    
+    cat('retrying...\t')
+    
+    # ebase
+    res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+                     bprior = c(0.251, 1e-6)), silent = T)
+    
+    stopCluster(cl)
+    
+    i <- i + 1
+    if(i > 5) next()
+    
+  }
   
   apacpdecobs <- rbind(apacpdecobs, res)
 
@@ -61,7 +82,6 @@ tomod <- apacpdat |>
   rename(DO_obs = DO_dtd)
 
 yrs <- unique(year(tomod$DateTimeStamp))
-yrs <- yrs[yrs > 2007]
 
 apacpdecdtd <- NULL
 for(yr in yrs){
@@ -77,10 +97,30 @@ for(yr in yrs){
     filter(year(DateTimeStamp) == yr)
   
   # ebase
-  res <- ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
-                  bprior = c(0.251, 1e-6))
+  res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+                  bprior = c(0.251, 1e-6)), silent = T)
 
   stopCluster(cl)
+  
+  i <- 1
+  while(inherits(res, 'try-error')){
+    
+    ncores <- detectCores()
+    cl <- makeCluster(ncores - 2)
+    registerDoParallel(cl)
+    
+    cat('retrying...\t')
+    
+    # ebase
+    res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+                     bprior = c(0.251, 1e-6)), silent = T)
+    
+    stopCluster(cl)
+    
+    i <- i + 1
+    if(i > 5) next()
+    
+  }
   
   apacpdecdtd <- rbind(apacpdecdtd, res)
   
@@ -148,6 +188,7 @@ tomod <- apadbdat |>
   select(-DO_dtd)
 
 yrs <- unique(year(tomod$DateTimeStamp))
+yrs <- yrs[yrs  > 2019]
 
 apadbdecobs <- NULL
 for(yr in yrs){
@@ -168,6 +209,7 @@ for(yr in yrs){
   
   stopCluster(cl)
   
+  i <- 1
   while(inherits(res, 'try-error')){
     
     ncores <- detectCores()
@@ -181,6 +223,9 @@ for(yr in yrs){
                      bprior = c(0.251, 1e-6)), silent = T)
     
     stopCluster(cl)
+    
+    i <- i + 1
+    if(i > 5) next()
     
   }
 
@@ -198,7 +243,6 @@ tomod <- apadbdat |>
   rename(DO_obs = DO_dtd)
 
 yrs <- unique(year(tomod$DateTimeStamp))
-yrs <- yrs[yrs > 2007]
 
 apadbdecdtd <- NULL
 for(yr in yrs){
@@ -219,6 +263,7 @@ for(yr in yrs){
   
   stopCluster(cl)
   
+  i <- 1
   while(inherits(res, 'try-error')){
     
     ncores <- detectCores()
@@ -232,6 +277,9 @@ for(yr in yrs){
                      bprior = c(0.251, 1e-6)), silent = T)
     
     stopCluster(cl)
+    
+    i <- i + 1
+    if(i > 5) next()
     
   }
   
