@@ -64,9 +64,10 @@ for(yr in yrs){
     stopCluster(cl)
     
     i <- i + 1
-    if(i > 5) next()
+    if(i > 5) break()
     
   }
+  if(i > 5) next()
   
   apacpdecobs <- rbind(apacpdecobs, res)
 
@@ -118,9 +119,10 @@ for(yr in yrs){
     stopCluster(cl)
     
     i <- i + 1
-    if(i > 5) next()
+    if(i > 5) break()
     
   }
+  if(i > 5) next()
   
   apacpdecdtd <- rbind(apacpdecdtd, res)
   
@@ -225,10 +227,11 @@ for(yr in yrs){
     stopCluster(cl)
     
     i <- i + 1
-    if(i > 5) next()
+    if(i > 5) break()
     
   }
-
+  if(i > 5) next()
+  
   apadbdecobs <- rbind(apadbdecobs, res)
   
 }
@@ -279,9 +282,10 @@ for(yr in yrs){
     stopCluster(cl)
     
     i <- i + 1
-    if(i > 5) next()
+    if(i > 5) break()
     
   }
+  if(i > 5) next()
   
   apadbdecdtd <- rbind(apadbdecdtd, res)
   
