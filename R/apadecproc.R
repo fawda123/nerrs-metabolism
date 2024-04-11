@@ -190,7 +190,6 @@ tomod <- apadbdat |>
   select(-DO_dtd)
 
 yrs <- unique(year(tomod$DateTimeStamp))
-yrs <- yrs[yrs  > 2019]
 
 apadbdecobs <- NULL
 for(yr in yrs){
@@ -353,7 +352,6 @@ tomod <- apaebdat |>
   select(-DO_dtd)
 
 yrs <- unique(year(tomod$DateTimeStamp))
-yrs <- yrs[yrs  > 2019]
 
 apaebdecobs <- NULL
 for(yr in yrs){
