@@ -203,15 +203,18 @@ for(yr in yrs){
   cat(yr, '\t')
   
   # setup parallel backend
-  ncores <- detectCores()
-  cl <- makeCluster(ncores - 2)
+  # ncores <- detectCores()
+  cl <- makeCluster(2)
   registerDoParallel(cl)
   
   tomodsub <- tomod |> 
     filter(year(DateTimeStamp) == yr)
   
+  # fixed depth for the year
+  depth <- mean(tomodsub$Depth, na.rm = T)
+  
   # ebase
-  res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+  res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
                bprior = c(0.251, 1e-6)), silent = T)
   
   stopCluster(cl)
@@ -219,14 +222,14 @@ for(yr in yrs){
   i <- 1
   while(inherits(res, 'try-error')){
     
-    ncores <- detectCores()
-    cl <- makeCluster(ncores - 2)
+    # ncores <- detectCores()
+    cl <- makeCluster(2)
     registerDoParallel(cl)
     
     cat('retrying...\t')
     
     # ebase
-    res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+    res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
                      bprior = c(0.251, 1e-6)), silent = T)
     
     stopCluster(cl)
@@ -258,15 +261,18 @@ for(yr in yrs){
   cat(yr, '\t')
   
   # setup parallel backend
-  ncores <- detectCores()
-  cl <- makeCluster(ncores - 2)
+  # ncores <- detectCores()
+  cl <- makeCluster(2)
   registerDoParallel(cl)
   
   tomodsub <- tomod |> 
     filter(year(DateTimeStamp) == yr)
   
+  # fixed depth for the year
+  depth <- mean(tomodsub$Depth, na.rm = T)
+  
   # ebase
-  res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+  res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
                bprior = c(0.251, 1e-6)), silent = T)
   
   stopCluster(cl)
@@ -274,14 +280,14 @@ for(yr in yrs){
   i <- 1
   while(inherits(res, 'try-error')){
     
-    ncores <- detectCores()
-    cl <- makeCluster(ncores - 2)
+    # ncores <- detectCores()
+    cl <- makeCluster(2)
     registerDoParallel(cl)
     
     cat('retrying...\t')
     
     # ebase
-    res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+    res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
                      bprior = c(0.251, 1e-6)), silent = T)
     
     stopCluster(cl)
@@ -365,15 +371,18 @@ for(yr in yrs){
   cat(yr, '\t')
   
   # setup parallel backend
-  ncores <- detectCores()
-  cl <- makeCluster(ncores - 2)
+  # ncores <- detectCores()
+  cl <- makeCluster(2)
   registerDoParallel(cl)
   
   tomodsub <- tomod |> 
     filter(year(DateTimeStamp) == yr)
   
+  # fixed depth for the year
+  depth <- mean(tomodsub$Depth, na.rm = T)
+  
   # ebase
-  res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+  res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
                    bprior = c(0.251, 1e-6)), silent = T)
   
   stopCluster(cl)
@@ -388,7 +397,7 @@ for(yr in yrs){
     cat('retrying...\t')
     
     # ebase
-    res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+    res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
                      bprior = c(0.251, 1e-6)), silent = T)
     
     stopCluster(cl)
@@ -420,15 +429,17 @@ for(yr in yrs){
   cat(yr, '\t')
   
   # setup parallel backend
-  ncores <- detectCores()
-  cl <- makeCluster(ncores - 2)
+  # ncores <- detectCores()
+  cl <- makeCluster(2)
   registerDoParallel(cl)
   
   tomodsub <- tomod |> 
     filter(year(DateTimeStamp) == yr)
   
+  # fixed depth for the year
+  depth <- mean(tomodsub$Depth, na.rm = T)
   # ebase
-  res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+  res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
                    bprior = c(0.251, 1e-6)), silent = T)
   
   stopCluster(cl)
@@ -436,14 +447,14 @@ for(yr in yrs){
   i <- 1
   while(inherits(res, 'try-error')){
     
-    ncores <- detectCores()
-    cl <- makeCluster(ncores - 2)
+    # ncores <- detectCores()
+    cl <- makeCluster(2)
     registerDoParallel(cl)
     
     cat('retrying...\t')
     
     # ebase
-    res <- try(ebase(tomodsub, interval = 900, Z = tomodsub$Depth, ndays = 7, progress = NULL, n.chains = 4,
+    res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
                      bprior = c(0.251, 1e-6)), silent = T)
     
     stopCluster(cl)
