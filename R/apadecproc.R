@@ -509,3 +509,71 @@ p2 <- plot_ly(subset(apaebdec, Type == 'Detided'), x = ~Date, y = ~P, type = 'sc
          yaxis = list(title = paste('Detided', ylab)))
 
 subplot(p1, p2, nrows = 2, shareX = T, titleY = T)
+
+# compare monthly avg -------------------------------------------------------------------------
+
+load(file = here::here('data/apacpdecobs.RData'))
+load(file = here::here('data/apacpdecdtd.RData'))
+load(file = here::here('data/apadbdecobs.RData'))
+load(file = here::here('data/apadbdecdtd.RData'))
+load(file = here::here('data/apaebdecobs.RData'))
+load(file = here::here('data/apaebdecdtd.RData'))
+
+toplo <- list(
+  apacpdecobs = apacpdecobs,
+  apacpdecdtd = apacpdecdtd,
+  apadbdecobs = apadbdecobs,
+  apadbdecdtd = apadbdecdtd,
+  apaebdecobs = apaebdecobs,
+  apaebdecdtd = apaebdecdtd
+) |> 
+  enframe() |> 
+  unnest('value') |> 
+  mutate(
+    mo = month(Date), 
+    NEM = P - R,
+    R = -1 * R
+  ) |> 
+  select(name, mo, P, R, NEM) |> 
+  pivot_longer(cols = c(P, R, NEM), names_to = 'type', values_to = 'value') |>
+  summarise(
+    ave = mean(value, na.rm = TRUE),
+    std = sd(value, na.rm = TRUE),
+    hiv = t.test(value, na.rm = T)$conf.int[2],
+    lov = t.test(value, na.rm = T)$conf.int[1],
+    .by = c(name, type, mo)
+  ) |> 
+  mutate(
+    site = case_when(
+      grepl('^apacp', name) ~ 'Cat Point',
+      grepl('^apadb', name) ~ 'Dry Bar',
+      grepl('^apaeb', name) ~ 'East Bay',  
+    ), 
+    dotyp = case_when(
+      grepl('obs$', name) ~ 'Observed',
+      grepl('dtd$', name) ~ 'Detided',
+    ), 
+    dotyp = factor(dotyp, levels = c('Observed', 'Detided'))
+  )
+
+ggplot(toplo, aes(x = mo, y = ave, group = type, color = type)) +
+  geom_hline(yintercept = 0, linetype = 'dashed') +
+  geom_errorbar(aes(ymin = lov, ymax = hiv), width = 0.4) +
+  geom_point() + 
+  geom_line() + 
+  scale_x_continuous(breaks = 1:12, labels = month.abb) +
+  facet_grid(site ~ dotyp) +
+  theme_minimal() +
+  theme(
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_blank(), 
+    panel.grid.minor.y = element_blank(), 
+    legend.position = 'top'
+  ) +
+  labs(
+    x = NULL, 
+    y = 'mmol O2 m-2 d-1', 
+    color = NULL
+  )
+
+
