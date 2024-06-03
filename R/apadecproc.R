@@ -42,7 +42,7 @@ for(yr in yrs){
   tomodsub <- tomod |> 
     filter(year(DateTimeStamp) == yr)
   
-  # fixed depth for the year
+  # variable depth for the year
   depth <- tomodsub$Depth
   
   # ebase
@@ -100,7 +100,7 @@ for(yr in yrs){
   tomodsub <- tomod |> 
     filter(year(DateTimeStamp) == yr)
   
-  # fixed depth for the year
+  # variable depth for the year
   depth <- tomodsub$Depth
   
   # ebase
@@ -210,7 +210,7 @@ for(yr in yrs){
   tomodsub <- tomod |> 
     filter(year(DateTimeStamp) == yr)
   
-  # fixed depth for the year
+  # variable depth for the year
   depth <- tomodsub$Depth
   
   # ebase
@@ -268,7 +268,7 @@ for(yr in yrs){
   tomodsub <- tomod |> 
     filter(year(DateTimeStamp) == yr)
   
-  # fixed depth for the year
+  # variable depth for the year
   depth <- tomodsub$Depth
   
   # ebase
@@ -378,7 +378,7 @@ for(yr in yrs){
   tomodsub <- tomod |> 
     filter(year(DateTimeStamp) == yr)
   
-  # fixed depth for the year
+  # variable depth for the year
   depth <- tomodsub$Depth
   
   # ebase
@@ -436,7 +436,7 @@ for(yr in yrs){
   tomodsub <- tomod |> 
     filter(year(DateTimeStamp) == yr)
   
-  # fixed depth for the year
+  # variable depth for the year
   depth <- tomodsub$Depth
   
   # ebase
