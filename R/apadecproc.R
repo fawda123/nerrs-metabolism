@@ -448,7 +448,7 @@ for(yr in yrs){
   i <- 1
   while(inherits(res, 'try-error')){
     
-    ncores <- detectCores
+    ncores <- detectCores()
     cl <- makeCluster(ncores - 2)
     registerDoParallel(cl)
     
