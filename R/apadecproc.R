@@ -27,54 +27,8 @@ apacpdat <- apacpdatraw |>
 tomod <- apacpdat |> 
   select(-DO_dtd)
 
-yrs <- unique(year(tomod$DateTimeStamp))
-
-apacpdecobs <- NULL
-for(yr in yrs){
-  
-  cat(yr, '\t')
-  
-  # setup parallel backend
-  ncores <- detectCores()
-  cl <- makeCluster(ncores - 2)
-  registerDoParallel(cl)
-
-  tomodsub <- tomod |> 
-    filter(year(DateTimeStamp) == yr)
-  
-  # variable depth for the year
-  depth <- tomodsub$Depth
-  
-  # ebase
-  res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
-             bprior = c(0.251, 1e-6)), silent = T)
-
-  stopCluster(cl)
-  
-  i <- 1
-  while(inherits(res, 'try-error')){
-    
-    # ncores <- detectCores()
-    cl <- makeCluster(ncores - 2)
-    registerDoParallel(cl)
-    
-    cat('retrying...\t')
-    
-    # ebase
-    res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
-                     bprior = c(0.251, 1e-6)), silent = T)
-    
-    stopCluster(cl)
-    
-    i <- i + 1
-    if(i > 5) break()
-    
-  }
-  if(i > 5) next()
-  
-  apacpdecobs <- rbind(apacpdecobs, res)
-
-}
+apacpdecobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
+                           bprior = c(0.251, 1e-6), quiet = F)
 
 save(apacpdecobs, file = here('data/apacpdecobs.RData'))
 
@@ -85,54 +39,8 @@ tomod <- apacpdat |>
   select(-DO_obs) |> 
   rename(DO_obs = DO_dtd)
 
-yrs <- unique(year(tomod$DateTimeStamp))
-
-apacpdecdtd <- NULL
-for(yr in yrs){
-  
-  cat(yr, '\t')
-  
-  # setup parallel backend
-  ncores <- detectCores()
-  cl <- makeCluster(ncores - 2)
-  registerDoParallel(cl)
-
-  tomodsub <- tomod |> 
-    filter(year(DateTimeStamp) == yr)
-  
-  # variable depth for the year
-  depth <- tomodsub$Depth
-  
-  # ebase
-  res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
-                  bprior = c(0.251, 1e-6)), silent = T)
-
-  stopCluster(cl)
-  
-  i <- 1
-  while(inherits(res, 'try-error')){
-    
-    ncores <- detectCores()
-    cl <- makeCluster(ncores - 2)
-    registerDoParallel(cl)
-    
-    cat('retrying...\t')
-    
-    # ebase
-    res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
-                     bprior = c(0.251, 1e-6)), silent = T)
-    
-    stopCluster(cl)
-    
-    i <- i + 1
-    if(i > 5) break()
-    
-  }
-  if(i > 5) next()
-  
-  apacpdecdtd <- rbind(apacpdecdtd, res)
-  
-}
+apacpdecdtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
+                           bprior = c(0.251, 1e-6), quiet = F)
 
 save(apacpdecdtd, file = here('data/apacpdecdtd.RData'))
 
@@ -195,54 +103,8 @@ apadbdat <- apadbdatraw |>
 tomod <- apadbdat |> 
   select(-DO_dtd)
 
-yrs <- unique(year(tomod$DateTimeStamp))
-
-apadbdecobs <- NULL
-for(yr in yrs){
-  
-  cat(yr, '\t')
-  
-  # setup parallel backend
-  ncores <- detectCores()
-  cl <- makeCluster(ncores - 2)
-  registerDoParallel(cl)
-  
-  tomodsub <- tomod |> 
-    filter(year(DateTimeStamp) == yr)
-  
-  # variable depth for the year
-  depth <- tomodsub$Depth
-  
-  # ebase
-  res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
-               bprior = c(0.251, 1e-6)), silent = T)
-  
-  stopCluster(cl)
-  
-  i <- 1
-  while(inherits(res, 'try-error')){
-    
-    # ncores <- detectCores()
-    cl <- makeCluster(ncores - 2)
-    registerDoParallel(cl)
-    
-    cat('retrying...\t')
-    
-    # ebase
-    res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
-                     bprior = c(0.251, 1e-6)), silent = T)
-    
-    stopCluster(cl)
-    
-    i <- i + 1
-    if(i > 5) break()
-    
-  }
-  if(i > 5) next()
-  
-  apadbdecobs <- rbind(apadbdecobs, res)
-  
-}
+apadbdecobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
+                           bprior = c(0.251, 1e-6), quiet = F)
 
 save(apadbdecobs, file = here('data/apadbdecobs.RData'))
 
@@ -253,54 +115,8 @@ tomod <- apadbdat |>
   select(-DO_obs) |> 
   rename(DO_obs = DO_dtd)
 
-yrs <- unique(year(tomod$DateTimeStamp))
-
-apadbdecdtd <- NULL
-for(yr in yrs){
-  
-  cat(yr, '\t')
-  
-  # setup parallel backend
-  ncores <- detectCores()
-  cl <- makeCluster(ncores - 2)
-  registerDoParallel(cl)
-  
-  tomodsub <- tomod |> 
-    filter(year(DateTimeStamp) == yr)
-  
-  # variable depth for the year
-  depth <- tomodsub$Depth
-  
-  # ebase
-  res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
-               bprior = c(0.251, 1e-6)), silent = T)
-  
-  stopCluster(cl)
-  
-  i <- 1
-  while(inherits(res, 'try-error')){
-    
-    ncores <- detectCores()
-    cl <- makeCluster(ncores - 2)
-    registerDoParallel(cl)
-    
-    cat('retrying...\t')
-    
-    # ebase
-    res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
-                     bprior = c(0.251, 1e-6)), silent = T)
-    
-    stopCluster(cl)
-    
-    i <- i + 1
-    if(i > 5) break()
-    
-  }
-  if(i > 5) next()
-  
-  apadbdecdtd <- rbind(apadbdecdtd, res)
-  
-}
+apadbdecdtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
+                           bprior = c(0.251, 1e-6), quiet = F)
 
 save(apadbdecdtd, file = here('data/apadbdecdtd.RData'))
 
@@ -363,54 +179,8 @@ apaebdat <- apaebdatraw |>
 tomod <- apaebdat |> 
   select(-DO_dtd)
 
-yrs <- unique(year(tomod$DateTimeStamp))
-
-apaebdecobs <- NULL
-for(yr in yrs){
-  
-  cat(yr, '\t')
-  
-  # setup parallel backend
-  ncores <- detectCores()
-  cl <- makeCluster(ncores - 2)
-  registerDoParallel(cl)
-  
-  tomodsub <- tomod |> 
-    filter(year(DateTimeStamp) == yr)
-  
-  # variable depth for the year
-  depth <- tomodsub$Depth
-  
-  # ebase
-  res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
-                   bprior = c(0.251, 1e-6)), silent = T)
-  
-  stopCluster(cl)
-  
-  i <- 1
-  while(inherits(res, 'try-error')){
-    
-    ncores <- detectCores()
-    cl <- makeCluster(ncores - 2)
-    registerDoParallel(cl)
-    
-    cat('retrying...\t')
-    
-    # ebase
-    res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
-                     bprior = c(0.251, 1e-6)), silent = T)
-    
-    stopCluster(cl)
-    
-    i <- i + 1
-    if(i > 5) break()
-    
-  }
-  if(i > 5) next()
-  
-  apaebdecobs <- rbind(apaebdecobs, res)
-  
-}
+apaebdecobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
+                           bprior = c(0.251, 1e-6), quiet = F)
 
 save(apaebdecobs, file = here('data/apaebdecobs.RData'))
 
@@ -421,54 +191,8 @@ tomod <- apaebdat |>
   select(-DO_obs) |> 
   rename(DO_obs = DO_dtd)
 
-yrs <- unique(year(tomod$DateTimeStamp))
-
-apaebdecdtd <- NULL
-for(yr in yrs){
-  
-  cat(yr, '\t')
-  
-  # setup parallel backend
-  ncores <- detectCores()
-  cl <- makeCluster(ncores - 2)
-  registerDoParallel(cl)
-  
-  tomodsub <- tomod |> 
-    filter(year(DateTimeStamp) == yr)
-  
-  # variable depth for the year
-  depth <- tomodsub$Depth
-  
-  # ebase
-  res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
-                   bprior = c(0.251, 1e-6)), silent = T)
-  
-  stopCluster(cl)
-  
-  i <- 1
-  while(inherits(res, 'try-error')){
-    
-    ncores <- detectCores()
-    cl <- makeCluster(ncores - 2)
-    registerDoParallel(cl)
-    
-    cat('retrying...\t')
-    
-    # ebase
-    res <- try(ebase(tomodsub, interval = 900, Z = depth, ndays = 1, progress = NULL, n.chains = 4,
-                     bprior = c(0.251, 1e-6)), silent = T)
-    
-    stopCluster(cl)
-    
-    i <- i + 1
-    if(i > 5) break()
-    
-  }
-  if(i > 5) next()
-  
-  apaebdecdtd <- rbind(apaebdecdtd, res)
-  
-}
+apaebdecdtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
+                           bprior = c(0.251, 1e-6), quiet = F)
 
 save(apaebdecdtd, file = here('data/apaebdecdtd.RData'))
 
