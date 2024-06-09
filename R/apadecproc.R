@@ -21,6 +21,8 @@ apacpdat <- apacpdatraw |>
   ) |> 
   arrange(DateTimeStamp)
 
+ncores <- parallel::detectCores() - 2
+
 ##
 # EBASE observed
 
@@ -28,7 +30,7 @@ tomod <- apacpdat |>
   select(-DO_dtd)
 
 apacpdecobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
-                           bprior = c(0.251, 1e-6), quiet = F)
+                           bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
 
 save(apacpdecobs, file = here('data/apacpdecobs.RData'))
 
@@ -40,7 +42,7 @@ tomod <- apacpdat |>
   rename(DO_obs = DO_dtd)
 
 apacpdecdtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
-                           bprior = c(0.251, 1e-6), quiet = F)
+                           bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
 
 save(apacpdecdtd, file = here('data/apacpdecdtd.RData'))
 
@@ -97,6 +99,8 @@ apadbdat <- apadbdatraw |>
   ) |> 
   arrange(DateTimeStamp)
 
+ncores <- parallel::detectCores() - 2
+
 ##
 # EBASE observed
 
@@ -104,7 +108,7 @@ tomod <- apadbdat |>
   select(-DO_dtd)
 
 apadbdecobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
-                           bprior = c(0.251, 1e-6), quiet = F)
+                           bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
 
 save(apadbdecobs, file = here('data/apadbdecobs.RData'))
 
@@ -116,7 +120,7 @@ tomod <- apadbdat |>
   rename(DO_obs = DO_dtd)
 
 apadbdecdtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
-                           bprior = c(0.251, 1e-6), quiet = F)
+                           bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
 
 save(apadbdecdtd, file = here('data/apadbdecdtd.RData'))
 
@@ -173,6 +177,8 @@ apaebdat <- apaebdatraw |>
   ) |> 
   arrange(DateTimeStamp)
 
+ncores <- parallel::detectCores() - 2
+
 ##
 # EBASE observed
 
@@ -180,7 +186,7 @@ tomod <- apaebdat |>
   select(-DO_dtd)
 
 apaebdecobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
-                           bprior = c(0.251, 1e-6), quiet = F)
+                           bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
 
 save(apaebdecobs, file = here('data/apaebdecobs.RData'))
 
@@ -192,7 +198,7 @@ tomod <- apaebdat |>
   rename(DO_obs = DO_dtd)
 
 apaebdecdtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
-                           bprior = c(0.251, 1e-6), quiet = F)
+                           bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
 
 save(apaebdecdtd, file = here('data/apaebdecdtd.RData'))
 
