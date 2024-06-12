@@ -286,7 +286,7 @@ toplo <- list(
     dotyp = factor(dotyp, levels = c('Observed', 'Detided'))
   )
 
-ggplot(toplo, aes(x = mo, y = ave, group = type, color = type)) +
+p <- ggplot(toplo, aes(x = mo, y = ave, group = type, color = type)) +
   geom_hline(yintercept = 0, linetype = 'dashed') +
   geom_errorbar(aes(ymin = lov, ymax = hiv), width = 0.4) +
   geom_point() + 
@@ -306,4 +306,7 @@ ggplot(toplo, aes(x = mo, y = ave, group = type, color = type)) +
     color = NULL
   )
 
+png('~/Desktop/ebase_monthly.png', width = 8, height = 6, units = 'in', res = 300)
+print(p)
+dev.off()
 
