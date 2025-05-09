@@ -12,6 +12,7 @@ library(here)
 library(readxl)
 library(purrr)
 library(fuzzyjoin)
+library(WtRegDO)
 
 # prep raw data -------------------------------------------------------------------------------
 
@@ -40,7 +41,7 @@ apaebmet <- apaebmetraw |>
     datetimestamp, 
     atemp_c = atemp, 
     bp_mb = bp,
-    wsdp_ms = wspd,
+    wspd_ms = wspd,
     par_wm2
   )
 
@@ -116,24 +117,97 @@ list(
         ), 
         datetimestamp = format(datetimestamp, "%Y-%m-%dT%H:%M:%S")
       ) |> 
-      select(-deploy, -retrieve, -levcrr, -level) |> 
+      select(
+        datetimestamp, 
+        temp_c = temp, 
+        sal_ppt = sal, 
+        do_mgl, 
+        depth_m = depth, 
+        atemp_c, 
+        bp_mb, 
+        wspd_ms, 
+        par_wm2
+        ) |> 
       write.csv(file = here(paste0('data-raw/', name, 'decraw.csv')), row.names = F)
   
     }
   )
 
-# run wtregdo to detide -----------------------------------------------------------------------
+# apa cat point detide ------------------------------------------------------------------------
 
 ncores <- parallel::detectCores() - 2
+registerDoParallel(cores = ncores)
+
+tomod <- read.csv(here('data-raw/apacpdecraw.csv')) |> 
+  mutate(
+    datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica'), 
+    depth_m = depth_m + 0.3
+  ) |> 
+  select(DateTimeStamp = datetimestamp, Sal = sal_ppt, DO_mgl = do_mgl, Tide = depth_m, 
+         WSpd = wspd_ms, Temp = temp_c, BP = bp_mb, ATemp = atemp_c, PAR = par_wm2) |> 
+  filter(!is.na(Tide))
+
+lat <- 29.7021
+long <- -84.8802
+
+apacpdtd <- wtreg(tomod, DO_obs = "DO_mgl", wins = list(9, 1, 1),
+             lat = lat, long = long, tz = 'America/Jamaica', progress = T, parallel = T)
+
+save(apacpdtd, file = here('data/apacpdtd.RData'))
+
+# apa dry bay detide --------------------------------------------------------------------------
+
+ncores <- parallel::detectCores() - 2
+registerDoParallel(cores = ncores)
 
 tomod <- read.csv(here('data-raw/apadbdecraw.csv')) |> 
   mutate(
-    datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica')
-  )
+    datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica'), 
+    depth_m = depth_m + 0.3
+  ) |> 
+  select(DateTimeStamp = datetimestamp, Sal = sal_ppt, DO_mgl = do_mgl, Tide = depth_m, 
+         WSpd = wspd_ms, Temp = temp_c, BP = bp_mb, ATemp = atemp_c, PAR = par_wm2) |> 
+  filter(!is.na(Tide))
 
-plot_ly(toplo, x = ~datetimestamp, y = ~depth, type = 'scatter', mode = 'lines', name = 'depth') 
+lat <- 29.6747
+long <- -85.0583
 
-# apa cat point -------------------------------------------------------------------------------
+apadbdtd <- wtreg(tomod, DO_obs = "DO_mgl", wins = list(9, 1, 1),
+                  lat = lat, long = long, tz = 'America/Jamaica', progress = T, parallel = T)
+
+save(apadbdtd, file = here('data/apadbdtd.RData'))
+
+# apa east bay detide -------------------------------------------------------------------------
+
+ncores <- parallel::detectCores() - 2
+registerDoParallel(cores = ncores)
+
+tomod <- read.csv(here('data-raw/apaebdecraw.csv')) |> 
+  mutate(
+    datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica'), 
+    depth_m = depth_m + 0.3
+  ) |> 
+  select(DateTimeStamp = datetimestamp, Sal = sal_ppt, DO_mgl = do_mgl, Depth = depth_m, 
+         WSpd = wspd_ms, Temp = temp_c, BP = bp_mb, ATemp = atemp_c, PAR = par_wm2) |> 
+  filter(!is.na(Tide))
+
+lat <- 29.7858
+long <- -84.8752
+
+apaebdtd <- wtreg(tomod, DO_obs = "DO_mgl", wins = list(9, 1, 1),
+                  lat = lat, long = long, tz = 'America/Jamaica', progress = T, parallel = T)
+
+save(apaebdtd, file = here('data/apaebdtd.RData'))
+
+# combine detided do with input data for ebase ------------------------------------------------
+
+# apa cat point odum --------------------------------------------------------------------------
+
+# apa dry bar odum ----------------------------------------------------------------------------
+
+# apa east bay odum ---------------------------------------------------------------------------
+
+# apa cat point ebase -------------------------------------------------------------------------
 
 # prep apacp data
 apacpdatraw <- read.csv(here('data-raw/apacpdecraw.csv'))
@@ -211,7 +285,7 @@ p2 <- plot_ly(subset(apacpdec, Type == 'Detided'), x = ~Date, y = ~P, type = 'sc
 
 subplot(p1, p2, nrows = 2, shareX = T, titleY = T)
 
-# apa dry bar ---------------------------------------------------------------------------------
+# apa dry bar ebase ---------------------------------------------------------------------------
 
 # prep apadb data
 apadbdatraw <- read.csv(here('data-raw/db_ebase_911.csv'))
@@ -289,7 +363,7 @@ p2 <- plot_ly(subset(apadbdec, Type == 'Detided'), x = ~Date, y = ~P, type = 'sc
 
 subplot(p1, p2, nrows = 2, shareX = T, titleY = T)
 
-# apa east bay --------------------------------------------------------------------------------
+# apa east bay ebase --------------------------------------------------------------------------
 
 # prep apaeb data
 apaebdatraw <- read.csv(here('data-raw/east_ebase_911.csv'))
