@@ -9,6 +9,8 @@ library(plotly)
 library(lubridate)
 library(SWMPr)
 library(here)
+library(readxl)
+library(purrr)
 
 # prep raw data -------------------------------------------------------------------------------
 
@@ -16,8 +18,8 @@ library(here)
 pth <- here('data-raw/965773.zip')
 apaebmetraw <- import_local(pth, 'apaebmet', trace = T)
 apacpraw <- import_local(pth, 'apacpwq', trace = T)
-apaebraw <- import_local(pth, 'apaebwq', trace = T)
 apadbraw <- import_local(pth, 'apadbwq', trace = T)
+apaebraw <- import_local(pth, 'apaebwq', trace = T)
 
 # for PAR conversion to W/m2
 Jpmolph <-  0.2175e6 # 1 mol-photons = 0.2175e6 J for ave PAR wavelength of 550nm be Watts/m2 for EBASE
@@ -41,6 +43,41 @@ apaebmet <- apaebmetraw |>
     par_wm2
   )
 
+# level correction data
+levdat <- list(
+    apacp = 'Cat Point', 
+    apadb = 'Dry Bar',
+    apaeb = 'East Bay Bottom'
+  ) |> 
+  enframe() |> 
+  mutate(
+    dat = map(value, ~ read_excel(
+      path = here('data-raw/Level to Depth conversions.xlsx'), 
+      sheet = .x, 
+      skip = 1, 
+      col_types = c('date', 'text', 'date', 'text', 'numeric'),
+      na = '-'
+      )
+    )
+  ) |> 
+  select(-value) |> 
+  unnest(dat) |> 
+  rename(
+    deploydt = `Deployment Date`, 
+    deploytm = `Deployment Time`, 
+    retrievedt = `Retrieval Date`, 
+    retrievetm = `Retrieval Time`,
+    levcrr = `Subtract from Level Values`
+  ) |> 
+  mutate(
+    across(c(deploydt, retrievedt), as.Date),
+    deploytm = 24 * as.numeric(deploytm),
+    retrievetm = case_when(
+      grepl('last', retrievetm) ~ '2:15',
+      T ~ as.character(24 * as.numeric(retrievetm))
+    )
+  )
+
 # addl processing
 # qaqc filtering
 # use level with correction after last datetime with depth
@@ -49,8 +86,8 @@ apaebmet <- apaebmetraw |>
 # fill missing where maximum gap is 4 records
 list(
   apacp = apacpraw,
-  apaeb = apaebraw,
-  apadb = apadbraw
+  apadb = apadbraw,
+  apaeb = apaebraw
   ) |> 
   enframe() |> 
   pmap(function(name, value){
