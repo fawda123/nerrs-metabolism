@@ -11,6 +11,7 @@ library(SWMPr)
 library(here)
 library(readxl)
 library(purrr)
+library(fuzzyjoin)
 
 # prep raw data -------------------------------------------------------------------------------
 
@@ -71,12 +72,14 @@ levdat <- list(
   ) |> 
   mutate(
     across(c(deploydt, retrievedt), as.Date),
-    deploytm = 24 * as.numeric(deploytm),
-    retrievetm = case_when(
-      grepl('last', retrievetm) ~ '2:15',
-      T ~ as.character(24 * as.numeric(retrievetm))
-    )
-  )
+    deploytm = as.character(as_hms(as.numeric(deploytm) * 86400)),
+    retrievetm = as.character(as_hms(as.numeric(retrievetm) * 86400), '%H:%M'),
+    deploytm = lubridate::ymd_hms(paste(deploydt, deploytm), tz = 'America/Jamaica'),
+    retrievetm = lubridate::ymd_hms(paste(retrievedt, retrievetm), tz = 'America/Jamaica')
+  ) |> 
+  select(name, deploy = deploytm, retrieve = retrievetm, levcrr) |> 
+  na.omit() |> 
+  group_nest(name)
 
 # addl processing
 # qaqc filtering
@@ -90,23 +93,32 @@ list(
   apaeb = apaebraw
   ) |> 
   enframe() |> 
-  pmap(function(name, value){
+  left_join(levdat, by = 'name') |>
+  pmap(function(name, value, data){
+  
+    cat(name, '\n')
+
     value |> 
-    qaqc(qaqc_keep = c(0, 1, 2, 3, 4, 5)) |> 
+      qaqc(qaqc_keep = c(0, 1, 2, 3, 4, 5)) |> 
       subset(select = c('datetimestamp', 'temp', 'do_mgl', 'sal', 'depth', 'level')) |> 
       setstep(timestep = 15) |> 
       comb(apaebmet, method = 'intersect') |> 
       na.approx(maxgap = 4) |> 
-      mutate(
-        lstdepth = datetimestamp[max(which(!is.na(depth)))], 
-        avedepth = mean(depth, na.rm = T),
-        depth = case_when(
-          datetimestamp <= lstdepth ~ depth, # fix!!!
-          datetimestamp > lstdepth ~ level + avedepth
-        )
+      interval_left_join(
+        data,
+        by = c("datetimestamp" = "deploy", "datetimestamp" = "retrieve"),
+        type = "within"
       ) |> 
-      select(-level, -lstdepth, -avedepth) |> 
+      mutate(
+        depth = case_when(
+          is.na(depth) & !is.na(level) ~ level - levcrr,
+          T ~ depth
+        ), 
+        datetimestamp = format(datetimestamp, "%Y-%m-%dT%H:%M:%S")
+      ) |> 
+      select(-deploy, -retrieve, -levcrr, -level) |> 
       write.csv(file = here(paste0('data-raw/', name, 'decraw.csv')), row.names = F)
+  
     }
   )
 
@@ -114,9 +126,12 @@ list(
 
 ncores <- parallel::detectCores() - 2
 
-apacpdecraw <- read.csv(here('data-raw/apacpdecraw.csv'))
+tomod <- read.csv(here('data-raw/apadbdecraw.csv')) |> 
+  mutate(
+    datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica')
+  )
 
-plot_ly(apadbraw, x = ~datetimestamp, y = ~depth, type = 'scatter', mode = 'lines', name = 'depth') 
+plot_ly(toplo, x = ~datetimestamp, y = ~depth, type = 'scatter', mode = 'lines', name = 'depth') 
 
 # apa cat point -------------------------------------------------------------------------------
 
