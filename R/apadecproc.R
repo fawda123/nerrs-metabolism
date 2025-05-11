@@ -187,7 +187,7 @@ tomod <- read.csv(here('data-raw/apaebdecraw.csv')) |>
     datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica'), 
     depth_m = depth_m + 0.3
   ) |> 
-  select(DateTimeStamp = datetimestamp, Sal = sal_ppt, DO_mgl = do_mgl, Depth = depth_m, 
+  select(DateTimeStamp = datetimestamp, Sal = sal_ppt, DO_mgl = do_mgl, Tide = depth_m, 
          WSpd = wspd_ms, Temp = temp_c, BP = bp_mb, ATemp = atemp_c, PAR = par_wm2) |> 
   filter(!is.na(Tide))
 
