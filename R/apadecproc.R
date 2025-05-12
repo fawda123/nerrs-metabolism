@@ -13,6 +13,7 @@ library(readxl)
 library(purrr)
 library(fuzzyjoin)
 library(WtRegDO)
+library(hms)
 
 # prep raw data -------------------------------------------------------------------------------
 
@@ -34,8 +35,10 @@ Jpmolph <-  0.2175e6 # 1 mol-photons = 0.2175e6 J for ave PAR wavelength of 550n
 apaebmet <- apaebmetraw |> 
   qaqc(qaqc_keep = c(0, 1, 2, 3, 4, 5)) |> 
   subset(select = c('datetimestamp', 'atemp', 'bp', 'wspd', 'totpar')) |> 
+  setstep(timestep = 30) |>
   mutate(
-    par_wm2 = totpar * Jpmolph * 1e-3 / 15/ 60, # convert to W / m2
+    totpar = totpar * 2, # 15min to 30min total
+    par_wm2 = totpar * Jpmolph * 1e-3 / 30 / 60, # convert to W / m2
   ) |> 
   select(
     datetimestamp, 
@@ -85,6 +88,7 @@ levdat <- list(
 # addl processing
 # qaqc filtering
 # use level with correction after last datetime with depth
+# add 0.3m to depth for offset
 # combine with met
 # save file
 # fill missing where maximum gap is 4 records
@@ -103,7 +107,7 @@ list(
       qaqc(qaqc_keep = c(0, 1, 2, 3, 4, 5)) |> 
       subset(select = c('datetimestamp', 'temp', 'do_mgl', 'sal', 'depth', 'level')) |> 
       setstep(timestep = 30) |> 
-      comb(apaebmet, method = 'intersect') |> 
+      comb(apaebmet, method = 'intersect', timestep = 30) |> 
       na.approx(maxgap = 4) |> 
       interval_left_join(
         data,
@@ -115,6 +119,7 @@ list(
           is.na(depth) & !is.na(level) ~ level - levcrr,
           T ~ depth
         ), 
+        depth = depth + 0.3,
         datetimestamp = format(datetimestamp, "%Y-%m-%dT%H:%M:%S")
       ) |> 
       select(
@@ -140,8 +145,7 @@ registerDoParallel(cores = ncores)
 
 tomod <- read.csv(here('data-raw/apacpdecraw.csv')) |> 
   mutate(
-    datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica'), 
-    depth_m = depth_m + 0.3
+    datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica')
   ) |> 
   select(DateTimeStamp = datetimestamp, Sal = sal_ppt, DO_mgl = do_mgl, Tide = depth_m, 
          WSpd = wspd_ms, Temp = temp_c, BP = bp_mb, ATemp = atemp_c, PAR = par_wm2) |> 
@@ -162,8 +166,7 @@ registerDoParallel(cores = ncores)
 
 tomod <- read.csv(here('data-raw/apadbdecraw.csv')) |> 
   mutate(
-    datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica'), 
-    depth_m = depth_m + 0.3
+    datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica')
   ) |> 
   select(DateTimeStamp = datetimestamp, Sal = sal_ppt, DO_mgl = do_mgl, Tide = depth_m, 
          WSpd = wspd_ms, Temp = temp_c, BP = bp_mb, ATemp = atemp_c, PAR = par_wm2) |> 
@@ -184,8 +187,7 @@ registerDoParallel(cores = ncores)
 
 tomod <- read.csv(here('data-raw/apaebdecraw.csv')) |> 
   mutate(
-    datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica'), 
-    depth_m = depth_m + 0.3
+    datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica')
   ) |> 
   select(DateTimeStamp = datetimestamp, Sal = sal_ppt, DO_mgl = do_mgl, Tide = depth_m, 
          WSpd = wspd_ms, Temp = temp_c, BP = bp_mb, ATemp = atemp_c, PAR = par_wm2) |> 
@@ -214,8 +216,7 @@ list(
     # actual
     dec <- read.csv(here(paste0('data-raw/', value, '.csv'))) |> 
       mutate(
-        datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica'), 
-        depth_m = depth_m + 0.3
+        datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica')
       ) 
     
     # detided
@@ -245,8 +246,7 @@ list(
 apacpdatraw <- read.csv(here('data-raw/apacpdecraw.csv'))
 apacpdat <- apacpdatraw |> 
   mutate(
-    DateTimeStamp = mdy_hm(DateTimeStamp, tz = 'America/Jamaica'), 
-    Depth = Depth + 0.3
+    DateTimeStamp = mdy_hm(DateTimeStamp, tz = 'America/Jamaica')
   ) |> 
   rename(
     Sal = Sal_ppt ,
@@ -323,8 +323,7 @@ subplot(p1, p2, nrows = 2, shareX = T, titleY = T)
 apadbdatraw <- read.csv(here('data-raw/db_ebase_911.csv'))
 apadbdat <- apadbdatraw |> 
   mutate(
-    DateTimeStamp = ymd_hms(DateTimeStamp, tz = 'America/Jamaica'), 
-    Depth = Depth + 0.3
+    DateTimeStamp = ymd_hms(DateTimeStamp, tz = 'America/Jamaica')
   ) |> 
   rename(
     Sal = Sal_ppt ,
@@ -401,8 +400,7 @@ subplot(p1, p2, nrows = 2, shareX = T, titleY = T)
 apaebdatraw <- read.csv(here('data-raw/east_ebase_911.csv'))
 apaebdat <- apaebdatraw |> 
   mutate(
-    DateTimeStamp = ymd_hms(DateTimeStamp, tz = 'America/Jamaica'), 
-    Depth = Depth + 1
+    DateTimeStamp = ymd_hms(DateTimeStamp, tz = 'America/Jamaica')
   ) |> 
   rename(
     Sal = Sal_ppt ,
