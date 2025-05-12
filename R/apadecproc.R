@@ -224,21 +224,74 @@ list(
     dtd <- get(name) |> 
       select(
         datetimestamp = DateTimeStamp, 
-        donrm_mgl = DO_nrm
+        donrm_mgl = pmax(DO_nrm, 0)
         )
   
     # join detided to actual and save
     dec |> 
       left_join(dtd, by = 'datetimestamp') |> 
-      write.csv(file = here(paste0('data/', value, '.csv')), row.names = F)
+      mutate(
+        datetimestamp = format(datetimestamp, "%Y-%m-%dT%H:%M:%S")
+      ) |> 
+      write.csv(file = here(paste0('data-raw/', value, '.csv')), row.names = F)
 
   })
 
-# apa cat point odum --------------------------------------------------------------------------
 
-# apa dry bar odum ----------------------------------------------------------------------------
+# odum ----------------------------------------------------------------------------------------
 
-# apa east bay odum ---------------------------------------------------------------------------
+list(
+    apacp = list(fl = 'apacpdecraw', lat = 29.7021, long = -84.8802),
+    apadb = list(fl = 'apadbdecraw', lat = 29.6747, long = -85.0583),
+    apaeb = list(fl = 'apaebdecraw', lat = 29.7858, long = -84.8752)
+  ) |> 
+  enframe() |> 
+  pmap(function(name, value){
+    
+    cat(name, '\n')
+
+    # actual
+    dec <- read.csv(here(paste0('data-raw/', value$fl, '.csv'))) |> 
+      mutate(
+        datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica')
+      ) |> 
+      select(
+        DateTimeStamp = datetimestamp, 
+        Temp = temp_c, 
+        Sal = sal_ppt, 
+        DO_obs = do_mgl, 
+        ATemp = atemp_c, 
+        BP = bp_mb,
+        WSpd = wspd_ms, 
+        Tide = depth_m, 
+        DO_nrm = donrm_mgl
+      )
+    
+    cat('\tobserved...\n')
+    odumobs <- WtRegDO::ecometab(
+      dec, 
+      DO_var = "DO_obs", 
+      lat = value$lat, 
+      long = value$long, 
+      tz = 'America/Jamaica', 
+      gasex = "Wanninkhof", 
+      instant = TRUE
+    )
+    write.csv(odumobs, file = here(paste0('data-raw/', name, 'decodumobs.csv')), row.names = F)
+    
+    cat('\tdetided...\n')
+    odumdtd <- WtRegDO::ecometab(
+      dec, 
+      DO_var = "DO_nrm", 
+      lat = value$lat, 
+      long = value$long, 
+      tz = 'America/Jamaica', 
+      gasex = "Wanninkhof", 
+      instant = TRUE
+    )
+    write.csv(odumdtd, file = here(paste0('data-raw/', name, 'decodumdtd.csv')), row.names = F)
+  
+  })
 
 # apa cat point ebase -------------------------------------------------------------------------
 
