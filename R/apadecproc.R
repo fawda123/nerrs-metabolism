@@ -102,7 +102,7 @@ list(
     value |> 
       qaqc(qaqc_keep = c(0, 1, 2, 3, 4, 5)) |> 
       subset(select = c('datetimestamp', 'temp', 'do_mgl', 'sal', 'depth', 'level')) |> 
-      setstep(timestep = 15) |> 
+      setstep(timestep = 30) |> 
       comb(apaebmet, method = 'intersect') |> 
       na.approx(maxgap = 4) |> 
       interval_left_join(
@@ -199,7 +199,39 @@ apaebdtd <- wtreg(tomod, DO_obs = "DO_mgl", wins = list(9, 1, 1),
 
 save(apaebdtd, file = here('data/apaebdtd.RData'))
 
-# combine detided do with input data for ebase ------------------------------------------------
+# combine detided with observed data ----------------------------------------------------------
+
+list(
+    apacpdtd = 'apacpdecraw',
+    apadbdtd = 'apadbdecraw',
+    apaebdtd = 'apaebdecraw'
+  ) |> 
+  enframe() |> 
+  pmap(function(name, value){
+  
+    cat(name, '\n')
+    
+    # actual
+    dec <- read.csv(here(paste0('data-raw/', value, '.csv'))) |> 
+      mutate(
+        datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica'), 
+        depth_m = depth_m + 0.3
+      ) 
+    
+    # detided
+    load(file = here(paste0('data/', name, '.RData')))
+    dtd <- get(name) |> 
+      select(
+        datetimestamp = DateTimeStamp, 
+        donrm_mgl = DO_nrm
+        )
+  
+    # join detided to actual and save
+    dec |> 
+      left_join(dtd, by = 'datetimestamp') |> 
+      write.csv(file = here(paste0('data/', value, '.csv')), row.names = F)
+
+  })
 
 # apa cat point odum --------------------------------------------------------------------------
 
