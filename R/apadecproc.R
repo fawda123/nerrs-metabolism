@@ -279,7 +279,15 @@ list(
       gasex = "Wanninkhof", 
       instant = TRUE
     )
-    write.csv(odumobs, file = here(paste0('data-raw/', name, 'decodumobs.csv')), row.names = F)
+    
+    obsnm <- paste0(name, 'decodumobs')
+    
+    # too large for github
+    write.csv(odumobs, file = here(paste0('~/Desktop/', obsnm, '.csv')), row.names = F)
+    
+    # save as binary
+    assign(obsnm, odumobs)
+    save(list = obsnm, file = here(paste0('data/', obsnm, '.RData')))
     
     cat('\tdetided...\n')
     odumdtd <- WtRegDO::ecometab(
@@ -291,7 +299,16 @@ list(
       gasex = "Wanninkhof", 
       instant = TRUE
     )
-    write.csv(odumdtd, file = here(paste0('data-raw/', name, 'decodumdtd.csv')), row.names = F)
+    
+    dtdnm <- paste0(name, 'decodumdtd')
+    
+    # too large for github
+    write.csv(odumdtd, file = here(paste0('~/Desktop/', dtdnm, '.csv')), row.names = F)
+    
+    # save as binary
+    assign(dtdnm, odumdtd)
+    save(list = dtdnm, file = here(paste0('data/', dtdnm, '.RData')))
+    
   
   })
 
