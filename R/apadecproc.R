@@ -212,20 +212,23 @@ list(
   pmap(function(name, value){
   
     cat(name, '\n')
-    
+
     # actual
     dec <- read.csv(here(paste0('data-raw/', value, '.csv'))) |> 
       mutate(
         datetimestamp = ymd_hms(datetimestamp, tz = 'America/Jamaica')
       ) 
-    
+  
     # detided
     load(file = here(paste0('data/', name, '.RData')))
     dtd <- get(name) |> 
       select(
         datetimestamp = DateTimeStamp, 
-        donrm_mgl = pmax(DO_nrm, 0)
-        )
+        donrm_mgl = DO_nrm
+        ) |> 
+      mutate(
+        donrm_mgl = pmax(donrm_mgl, 0) 
+      )
   
     # join detided to actual and save
     dec |> 
@@ -236,7 +239,6 @@ list(
       write.csv(file = here(paste0('data-raw/', value, '.csv')), row.names = F)
 
   })
-
 
 # odum ----------------------------------------------------------------------------------------
 
