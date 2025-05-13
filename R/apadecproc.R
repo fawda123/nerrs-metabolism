@@ -15,6 +15,8 @@ library(fuzzyjoin)
 library(WtRegDO)
 library(hms)
 
+source(here('R/funcs.R'))
+
 # prep raw data -------------------------------------------------------------------------------
 
 # get raw
@@ -315,16 +317,7 @@ list(
 # apa cat point ebase -------------------------------------------------------------------------
 
 # prep apacp data
-apacpdatraw <- read.csv(here('data-raw/apacpdecraw.csv'))
-apacpdat <- apacpdatraw |> 
-  mutate(
-    DateTimeStamp = mdy_hm(DateTimeStamp, tz = 'America/Jamaica')
-  ) |> 
-  rename(
-    Sal = Sal_ppt ,
-    PAR = PAR_W.m2
-  ) |> 
-  arrange(DateTimeStamp)
+apacpdat <- ebsdatprp(here('data-raw/apacpdecraw.csv'))
 
 ncores <- parallel::detectCores() - 2
 
@@ -332,7 +325,7 @@ ncores <- parallel::detectCores() - 2
 # EBASE observed
 
 tomod <- apacpdat |> 
-  select(-DO_dtd)
+  select(-DO_nrm)
 
 apacpdecebaseobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
                            bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
@@ -344,7 +337,7 @@ save(apacpdecebaseobs, file = here('data/apacpdecebaseobs.RData'))
 
 tomod <- apacpdat |> 
   select(-DO_obs) |> 
-  rename(DO_obs = DO_dtd)
+  rename(DO_obs = DO_nrm)
 
 apacpdecebasedtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
                            bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
@@ -357,51 +350,12 @@ save(apacpdecebasedtd, file = here('data/apacpdecebasedtd.RData'))
 data(apacpdecebaseobs)
 data(apacpdecebasedtd)
 
-ylab <- 'mmol O2 m-2 d-1'
-
-apacpdec <- list(
-  Observed = apacpdecebaseobs, 
-  Detided = apacpdecebasedtd
-) |> 
-  enframe(name = 'Type') |> 
-  unnest(value) |> 
-  select(Type, Date, P, R, D) |> 
-  mutate(
-    NEM = P - R
-  ) |> 
-  pivot_longer(cols = -matches('Date|Type')) |> 
-  summarise(value = mean(value, na.rm = T), .by = c(Type, Date, name)) |> 
-  pivot_wider(names_from = name, values_from = value)
-
-p1 <- plot_ly(subset(apacpdec, Type == 'Observed'), x = ~Date, y = ~P, type = 'scatter', mode = 'lines', name = 'P') |>
-  add_trace(y = ~-R, mode = 'lines', name = 'R') |>
-  add_trace(y = ~D, mode = 'lines', name = 'D') |>
-  add_trace(y = ~NEM, mode = 'lines', name = 'NEM') |>
-  layout(xaxis = list(title = ''),
-         yaxis = list(title = paste('Observed', ylab)))
-
-p2 <- plot_ly(subset(apacpdec, Type == 'Detided'), x = ~Date, y = ~P, type = 'scatter', mode = 'lines', name = 'P') |>
-  add_trace(y = ~-R, mode = 'lines', name = 'R') |>
-  add_trace(y = ~D, mode = 'lines', name = 'D') |>
-  add_trace(y = ~NEM, mode = 'lines', name = 'NEM') |>
-  layout(xaxis = list(title = ''),
-         yaxis = list(title = paste('Detided', ylab)))
-
-subplot(p1, p2, nrows = 2, shareX = T, titleY = T)
+ebsresplo(apacpdecebaseobs, apacpdecebasedtd)
 
 # apa dry bar ebase ---------------------------------------------------------------------------
 
 # prep apadb data
-apadbdatraw <- read.csv(here('data-raw/db_ebase_911.csv'))
-apadbdat <- apadbdatraw |> 
-  mutate(
-    DateTimeStamp = ymd_hms(DateTimeStamp, tz = 'America/Jamaica')
-  ) |> 
-  rename(
-    Sal = Sal_ppt ,
-    PAR = PAR_W.m2
-  ) |> 
-  arrange(DateTimeStamp)
+apadbdat <- ebsdatprp(here('data-raw/apadbdecraw.csv'))
 
 ncores <- parallel::detectCores() - 2
 
@@ -409,7 +363,7 @@ ncores <- parallel::detectCores() - 2
 # EBASE observed
 
 tomod <- apadbdat |> 
-  select(-DO_dtd)
+  select(-DO_nrm)
 
 apadbdecebaseobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
                            bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
@@ -421,7 +375,7 @@ save(apadbdecebaseobs, file = here('data/apadbdecebaseobs.RData'))
 
 tomod <- apadbdat |> 
   select(-DO_obs) |> 
-  rename(DO_obs = DO_dtd)
+  rename(DO_obs = DO_nrm)
 
 apadbdecebasedtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
                            bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
@@ -434,51 +388,12 @@ save(apadbdecebasedtd, file = here('data/apadbdecebasedtd.RData'))
 data(apadbdecebaseobs)
 data(apadbdecebasedtd)
 
-ylab <- 'mmol O2 m-2 d-1'
-
-apadbdec <- list(
-  Observed = apadbdecebaseobs, 
-  Detided = apadbdecebasedtd
-) |> 
-  enframe(name = 'Type') |> 
-  unnest(value) |> 
-  select(Type, Date, P, R, D) |> 
-  mutate(
-    NEM = P - R
-  ) |> 
-  pivot_longer(cols = -matches('Date|Type')) |> 
-  summarise(value = mean(value, na.rm = T), .by = c(Type, Date, name)) |> 
-  pivot_wider(names_from = name, values_from = value)
-
-p1 <- plot_ly(subset(apadbdec, Type == 'Observed'), x = ~Date, y = ~P, type = 'scatter', mode = 'lines', name = 'P') |>
-  add_trace(y = ~-R, mode = 'lines', name = 'R') |>
-  add_trace(y = ~D, mode = 'lines', name = 'D') |>
-  add_trace(y = ~NEM, mode = 'lines', name = 'NEM') |>
-  layout(xaxis = list(title = ''),
-         yaxis = list(title = paste('Observed', ylab)))
-
-p2 <- plot_ly(subset(apadbdec, Type == 'Detided'), x = ~Date, y = ~P, type = 'scatter', mode = 'lines', name = 'P') |>
-  add_trace(y = ~-R, mode = 'lines', name = 'R') |>
-  add_trace(y = ~D, mode = 'lines', name = 'D') |>
-  add_trace(y = ~NEM, mode = 'lines', name = 'NEM') |>
-  layout(xaxis = list(title = ''),
-         yaxis = list(title = paste('Detided', ylab)))
-
-subplot(p1, p2, nrows = 2, shareX = T, titleY = T)
+ebsresplo(apadbdecebaseobs, apadbdecebasedtd)
 
 # apa east bay ebase --------------------------------------------------------------------------
 
 # prep apaeb data
-apaebdatraw <- read.csv(here('data-raw/east_ebase_911.csv'))
-apaebdat <- apaebdatraw |> 
-  mutate(
-    DateTimeStamp = ymd_hms(DateTimeStamp, tz = 'America/Jamaica')
-  ) |> 
-  rename(
-    Sal = Sal_ppt ,
-    PAR = PAR_W.m2
-  ) |> 
-  arrange(DateTimeStamp)
+apaebdat <- ebsdatprp(here('data-raw/apaebdecraw.csv'))
 
 ncores <- parallel::detectCores() - 2
 
@@ -486,7 +401,7 @@ ncores <- parallel::detectCores() - 2
 # EBASE observed
 
 tomod <- apaebdat |> 
-  select(-DO_dtd)
+  select(-DO_nrm)
 
 apaebdecebaseobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
                            bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
@@ -498,7 +413,7 @@ save(apaebdecebaseobs, file = here('data/apaebdecebaseobs.RData'))
 
 tomod <- apaebdat |> 
   select(-DO_obs) |> 
-  rename(DO_obs = DO_dtd)
+  rename(DO_obs = DO_nrm)
 
 apaebdecebasedtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
                            bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
@@ -511,38 +426,7 @@ save(apaebdeebasecdtd, file = here('data/apaebdecebasedtd.RData'))
 data(apaebdecebaseobs)
 data(apaebdecebasedtd)
 
-ylab <- 'mmol O2 m-2 d-1'
-
-apaebdec <- list(
-  Observed = apaebdecebaseobs, 
-  Detided = apaebdecebasedtd
-) |> 
-  enframe(name = 'Type') |> 
-  unnest(value) |> 
-  select(Type, Date, P, R, D) |> 
-  mutate(
-    NEM = P - R
-  ) |> 
-  pivot_longer(cols = -matches('Date|Type')) |> 
-  summarise(value = mean(value, na.rm = T), .by = c(Type, Date, name)) |> 
-  pivot_wider(names_from = name, values_from = value)
-
-p1 <- plot_ly(subset(apaebdec, Type == 'Observed'), x = ~Date, y = ~P, type = 'scatter', mode = 'lines', name = 'P') |>
-  add_trace(y = ~-R, mode = 'lines', name = 'R') |>
-  add_trace(y = ~D, mode = 'lines', name = 'D') |>
-  add_trace(y = ~NEM, mode = 'lines', name = 'NEM') |>
-  layout(xaxis = list(title = ''),
-         yaxis = list(title = paste('Observed', ylab)))
-
-p2 <- plot_ly(subset(apaebdec, Type == 'Detided'), x = ~Date, y = ~P, type = 'scatter', mode = 'lines', name = 'P') |>
-  add_trace(y = ~-R, mode = 'lines', name = 'R') |>
-  add_trace(y = ~D, mode = 'lines', name = 'D') |>
-  add_trace(y = ~NEM, mode = 'lines', name = 'NEM') |>
-  layout(xaxis = list(title = ''),
-         yaxis = list(title = paste('Detided', ylab)))
-
-subplot(p1, p2, nrows = 2, shareX = T, titleY = T)
-
+ebsresplo(apaebdecebaseobs, apaebdecebasedtd)
 
 # save all as csv -----------------------------------------------------------------------------
 
