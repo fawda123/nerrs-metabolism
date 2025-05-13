@@ -334,10 +334,10 @@ ncores <- parallel::detectCores() - 2
 tomod <- apacpdat |> 
   select(-DO_dtd)
 
-apacpdecobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
+apacpdecebaseobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
                            bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
 
-save(apacpdecobs, file = here('data/apacpdecobs.RData'))
+save(apacpdecebaseobs, file = here('data/apacpdecebaseobs.RData'))
 
 ##
 # EBASE detided
@@ -346,22 +346,22 @@ tomod <- apacpdat |>
   select(-DO_obs) |> 
   rename(DO_obs = DO_dtd)
 
-apacpdecdtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
+apacpdecebasedtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
                            bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
 
-save(apacpdecdtd, file = here('data/apacpdecdtd.RData'))
+save(apacpdecebasedtd, file = here('data/apacpdecebasedtd.RData'))
 
 ##
 # view results
 
-data(apacpdecobs)
-data(apacpdecdtd)
+data(apacpdecebaseobs)
+data(apacpdecebasedtd)
 
 ylab <- 'mmol O2 m-2 d-1'
 
 apacpdec <- list(
-  Observed = apacpdecobs, 
-  Detided = apacpdecdtd
+  Observed = apacpdecebaseobs, 
+  Detided = apacpdecebasedtd
 ) |> 
   enframe(name = 'Type') |> 
   unnest(value) |> 
@@ -411,10 +411,10 @@ ncores <- parallel::detectCores() - 2
 tomod <- apadbdat |> 
   select(-DO_dtd)
 
-apadbdecobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
+apadbdecebaseobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
                            bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
 
-save(apadbdecobs, file = here('data/apadbdecobs.RData'))
+save(apadbdecebaseobs, file = here('data/apadbdecebaseobs.RData'))
 
 ##
 # EBASE detided
@@ -423,22 +423,22 @@ tomod <- apadbdat |>
   select(-DO_obs) |> 
   rename(DO_obs = DO_dtd)
 
-apadbdecdtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
+apadbdecebasedtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
                            bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
 
-save(apadbdecdtd, file = here('data/apadbdecdtd.RData'))
+save(apadbdecebasedtd, file = here('data/apadbdecebasedtd.RData'))
 
 ##
 # view results
 
-data(apadbdecobs)
-data(apadbdecdtd)
+data(apadbdecebaseobs)
+data(apadbdecebasedtd)
 
 ylab <- 'mmol O2 m-2 d-1'
 
 apadbdec <- list(
-  Observed = apadbdecobs, 
-  Detided = apadbdecdtd
+  Observed = apadbdecebaseobs, 
+  Detided = apadbdecebasedtd
 ) |> 
   enframe(name = 'Type') |> 
   unnest(value) |> 
@@ -488,10 +488,10 @@ ncores <- parallel::detectCores() - 2
 tomod <- apaebdat |> 
   select(-DO_dtd)
 
-apaebdecobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
+apaebdecebaseobs <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
                            bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
 
-save(apaebdecobs, file = here('data/apaebdecobs.RData'))
+save(apaebdecebaseobs, file = here('data/apaebdecebaseobs.RData'))
 
 ##
 # EBASE detided
@@ -500,22 +500,22 @@ tomod <- apaebdat |>
   select(-DO_obs) |> 
   rename(DO_obs = DO_dtd)
 
-apaebdecdtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
+apaebdecebasedtd <- ebase_years(tomod, Z = tomod$Depth, interval = 900, ndays = 1, n.chains = 4,
                            bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
 
-save(apaebdecdtd, file = here('data/apaebdecdtd.RData'))
+save(apaebdeebasecdtd, file = here('data/apaebdecebasedtd.RData'))
 
 ##
 # view results
 
-data(apaebdecobs)
-data(apaebdecdtd)
+data(apaebdecebaseobs)
+data(apaebdecebasedtd)
 
 ylab <- 'mmol O2 m-2 d-1'
 
 apaebdec <- list(
-  Observed = apaebdecobs, 
-  Detided = apaebdecdtd
+  Observed = apaebdecebaseobs, 
+  Detided = apaebdecebasedtd
 ) |> 
   enframe(name = 'Type') |> 
   unnest(value) |> 
@@ -546,21 +546,21 @@ subplot(p1, p2, nrows = 2, shareX = T, titleY = T)
 
 # save all as csv -----------------------------------------------------------------------------
 
-load(file = here::here('data/apacpdecobs.RData'))
-load(file = here::here('data/apacpdecdtd.RData'))
-load(file = here::here('data/apadbdecobs.RData'))
-load(file = here::here('data/apadbdecdtd.RData'))
-load(file = here::here('data/apaebdecobs.RData'))
-load(file = here::here('data/apaebdecdtd.RData'))
+load(file = here::here('data/apacpdecebaseobs.RData'))
+load(file = here::here('data/apacpdecebasedtd.RData'))
+load(file = here::here('data/apadbdecebaseobs.RData'))
+load(file = here::here('data/apadbdecebasedtd.RData'))
+load(file = here::here('data/apaebdecebaseobs.RData'))
+load(file = here::here('data/apaebdecebasedtd.RData'))
 
 # save all
 list(
-    apacpdecobs = apacpdecobs,
-    apacpdecdtd = apacpdecdtd,
-    apadbdecobs = apadbdecobs,
-    apadbdecdtd = apadbdecdtd,
-    apaebdecobs = apaebdecobs,
-    apaebdecdtd = apaebdecdtd
+    apacpdecebaseobs = apacpdecebaseobs,
+    apacpdecebasedtd = apacpdecebasedtd,
+    apadbdecebaseobs = apadbdecebaseobs,
+    apadbdecebasedtd = apadbdecebasedtd,
+    apaebdecebaseobs = apaebdecebaseobs,
+    apaebdecebasedtd = apaebdecebasedtd
   ) |> 
   enframe() |> 
   purrr::pmap(
@@ -573,20 +573,20 @@ list(
 
 # compare monthly avg -------------------------------------------------------------------------
 
-load(file = here::here('data/apacpdecobs.RData'))
-load(file = here::here('data/apacpdecdtd.RData'))
-load(file = here::here('data/apadbdecobs.RData'))
-load(file = here::here('data/apadbdecdtd.RData'))
-load(file = here::here('data/apaebdecobs.RData'))
-load(file = here::here('data/apaebdecdtd.RData'))
+load(file = here::here('data/apacpdecebaseobs.RData'))
+load(file = here::here('data/apacpdecebasedtd.RData'))
+load(file = here::here('data/apadbdecebaseobs.RData'))
+load(file = here::here('data/apadbdecebasedtd.RData'))
+load(file = here::here('data/apaebdecebaseobs.RData'))
+load(file = here::here('data/apaebdecebasedtd.RData'))
 
 toplo <- list(
-  apacpdecobs = apacpdecobs,
-  apacpdecdtd = apacpdecdtd,
-  apadbdecobs = apadbdecobs,
-  apadbdecdtd = apadbdecdtd,
-  apaebdecobs = apaebdecobs,
-  apaebdecdtd = apaebdecdtd
+  apacpdecebaseobs = apacpdecebaseobs,
+  apacpdecebasedtd = apacpdecebasedtd,
+  apadbdecebaseobs = apadbdecebaseobs,
+  apadbdecebasedtd = apadbdecebasedtd,
+  apaebdecebaseobs = apaebdecebaseobs,
+  apaebdecebasedtd = apaebdecebasedtd
 ) |> 
   enframe() |> 
   unnest('value') |> 
@@ -643,20 +643,20 @@ dev.off()
 
 # compare monthly avg across years ------------------------------------------------------------
 
-load(file = here::here('data/apacpdecobs.RData'))
-load(file = here::here('data/apacpdecdtd.RData'))
-load(file = here::here('data/apadbdecobs.RData'))
-load(file = here::here('data/apadbdecdtd.RData'))
-load(file = here::here('data/apaebdecobs.RData'))
-load(file = here::here('data/apaebdecdtd.RData'))
+load(file = here::here('data/apacpdecebaseobs.RData'))
+load(file = here::here('data/apacpdecebasedtd.RData'))
+load(file = here::here('data/apadbdecebaseobs.RData'))
+load(file = here::here('data/apadbdecebasedtd.RData'))
+load(file = here::here('data/apaebdecebaseobs.RData'))
+load(file = here::here('data/apaebdecebasedtd.RData'))
 
 toplo <- list(
-  apacpdecobs = apacpdecobs,
-  apacpdecdtd = apacpdecdtd,
-  apadbdecobs = apadbdecobs,
-  apadbdecdtd = apadbdecdtd,
-  apaebdecobs = apaebdecobs,
-  apaebdecdtd = apaebdecdtd
+  apacpdecebaseobs = apacpdecebaseobs,
+  apacpdecebasedtd = apacpdecebasedtd,
+  apadbdecebaseobs = apadbdecebaseobs,
+  apadbdecebasedtd = apadbdecebasedtd,
+  apaebdecebaseobs = apaebdecebaseobs,
+  apaebdecebasedtd = apaebdecebasedtd
 ) |> 
   enframe() |> 
   unnest('value') |> 
