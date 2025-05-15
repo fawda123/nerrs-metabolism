@@ -418,7 +418,7 @@ tomod <- apaebdat |>
 apaebdecebasedtd <- ebase_years(tomod, Z = tomod$Depth, interval = 1800, ndays = 1, n.chains = 4,
                            bprior = c(0.251, 1e-6), ncores = ncores, quiet = F)
 
-save(apaebdeebasecdtd, file = here('data/apaebdecebasedtd.RData'))
+save(apaebdecebasedtd, file = here('data/apaebdecebasedtd.RData'))
 
 ##
 # view results
@@ -453,7 +453,6 @@ list(
       write.csv(value, file = here::here(paste0('~/Desktop/', name, '.csv')), row.names = F)
     }
   )
-
 
 # compare monthly avg -------------------------------------------------------------------------
 

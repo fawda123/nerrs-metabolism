@@ -1,6 +1,6 @@
 # helper function to prep apa dec csv data for ebase
 ebsdatprp <- function(pth){
-  
+
   out <- read.csv(pth) |> 
     select(
       DateTimeStamp = datetimestamp,
@@ -15,7 +15,8 @@ ebsdatprp <- function(pth){
     mutate(
       DateTimeStamp = ymd_hms(DateTimeStamp, tz = 'America/Jamaica')
     ) |> 
-    arrange(DateTimeStamp)
+    arrange(DateTimeStamp) |> 
+    filter(lubridate::year(DateTimeStamp) < 2025)
   
   return(out)
   
