@@ -428,7 +428,7 @@ data(apaebdecebasedtd)
 
 ebsresplo(apaebdecebaseobs, apaebdecebasedtd)
 
-# save all as csv -----------------------------------------------------------------------------
+# save all ebase as csv -----------------------------------------------------------------------
 
 load(file = here::here('data/apacpdecebaseobs.RData'))
 load(file = here::here('data/apacpdecebasedtd.RData'))
