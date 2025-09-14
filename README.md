@@ -23,3 +23,4 @@ Misc. R scripts:
 * `R/inst_ecometab5.R`: 2022 May metabolism estimates at Apalachicola Dry Bar using WtRegDO
 * `R/inst_ecometab6.R`: 2022 May metabolism estimates at Apalachicola Pilot's Cove using WtRegDO
 * `R/nep_compare.R`: Example file showing NEM estimates based on daily metabolism from WtRegDO and time rate of change for DO
+* `R/wtreggrid.R`: Grid-based search for optimal window widths with evaluation functions
